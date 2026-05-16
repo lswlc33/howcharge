@@ -349,9 +349,10 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
       </div>
     </div>
 
+    <div class="form-group budget-highlight" style="margin-bottom:16px"><label>⏰ 预算时间</label><div class="input-unit"><input type="number" id="cBudget" value="8" min="0.5" step="0.5"><span class="unit">h</span></div></div>
+
     <div class="card">
       <div class="card-title">充电设置</div>
-      <div class="form-group budget-highlight" style="margin-bottom:16px"><label>⏰ 预算时间</label><div class="input-unit"><input type="number" id="cBudget" value="8" min="0.5" step="0.5"><span class="unit">h</span></div></div>
       <div class="form-grid">
         <div class="form-group full"><label>充电模式</label>
           <div class="radio-group" id="cModeGroup">
@@ -381,8 +382,8 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
           <div class="form-group" id="cTricklePowerGroup" style="display:none"><label>涓流功率</label><div class="input-unit"><input type="number" id="cTrickleP" value="500" min="10" step="10"><span class="unit">W</span></div></div>
         </div>
       </div>
-      <button class="btn-generate" onclick="runCharge()">生成充电曲线</button>
     </div>
+    <button class="btn-generate" onclick="runCharge()">生成充电曲线</button>
 
     <div class="card" id="cResultCard" style="display:none">
       <div class="card-title">充电预测</div>
@@ -436,8 +437,8 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
         <div class="form-group" id="dPowerGroup"><label>待机功耗</label><div class="input-unit"><input type="number" id="dPower" value="50" min="0.1" step="1"><span class="unit">W</span></div></div>
         <div class="form-group" id="dCurrentGroup" style="display:none"><label>待机电流</label><div class="input-unit"><input type="number" id="dCurrent" value="1" min="0.01" step="0.01"><span class="unit">A</span></div></div>
       </div>
-      <button class="btn-generate" onclick="runDischarge()">生成放电曲线</button>
     </div>
+    <button class="btn-generate" onclick="runDischarge()">生成放电曲线</button>
 
     <div class="card" id="dResultCard" style="display:none">
       <div class="card-title">放电预测</div>
@@ -651,6 +652,7 @@ function simulateCharge(params) {
     totalTime: t,
     finalSOC: soc,
     packCapacity: s * capacity,
+    packEnergy: s * (isHV ? 3.8 : 3.7) * capacity,
     packVMax: s * vMaxCell,
     packVMin: s * getCellVMin()
   };
@@ -716,7 +718,8 @@ function simulateDischarge(params) {
     finalSOC: soc,
     standbyDays: +(t / 86400).toFixed(1),
     standbyHours: +(t / 3600).toFixed(1),
-    packCapacity: s * capacity
+    packCapacity: s * capacity,
+    packEnergy: s * (isHV ? 3.8 : 3.7) * capacity
   };
 }
 
@@ -1000,7 +1003,7 @@ function showChargeResults(result, mode) {
       <div class="suggest-box">
         <div class="label">建议充电电流</div>
         <div class="value">${I.toFixed(1)} A</div>
-        <div class="note">电池组 ${result.packCapacity.toFixed(0)}Ah · ${(I / (result.packCapacity / parseFloat(document.getElementById('cS').value))).toFixed(2)}C</div>
+        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · ${(I / (result.packCapacity / parseFloat(document.getElementById('cS').value))).toFixed(2)}C</div>
       </div>`;
   } else {
     const P = parseFloat(document.getElementById('cPower').value);
@@ -1008,7 +1011,7 @@ function showChargeResults(result, mode) {
       <div class="suggest-box">
         <div class="label">建议充电功率</div>
         <div class="value">${(P / 1000).toFixed(1)} kW</div>
-        <div class="note">电池组 ${result.packCapacity.toFixed(0)}Ah · 最大 ${result.packVMax.toFixed(0)}V</div>
+        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · 最大 ${result.packVMax.toFixed(0)}V</div>
       </div>`;
   }
 
@@ -1024,7 +1027,7 @@ function showChargeResults(result, mode) {
   phaseHTML += `
     <div class="result-item"><div class="label">预计充满时间</div><div class="value">${formatTimeH(result.totalTime)} h</div></div>
     <div class="result-item"><div class="label">最终电量</div><div class="value">${finalSOC.toFixed(1)}%</div></div>
-    <div class="result-item"><div class="label">电池组容量</div><div class="value">${result.packCapacity.toFixed(0)} Ah</div><div class="sub">${result.packVMin.toFixed(0)}V ~ ${result.packVMax.toFixed(0)}V</div></div>
+    <div class="result-item"><div class="label">电池组容量</div><div class="value">${(result.packEnergy / 1000).toFixed(1)} kWh</div><div class="sub">${result.packVMin.toFixed(0)}V ~ ${result.packVMax.toFixed(0)}V</div></div>
     <div class="result-item"><div class="label">充电阶段</div><div class="value">${result.phases.length} 段</div></div>`;
   phaseHTML += '</div>';
 
@@ -1064,7 +1067,7 @@ function showDischargeResults(result) {
     <div class="result-grid">
       <div class="result-item"><div class="label">待机天数</div><div class="value">${days.toFixed(1)} 天</div></div>
       <div class="result-item"><div class="label">待机小时</div><div class="value">${result.standbyHours.toFixed(0)} h</div></div>
-      <div class="result-item"><div class="label">电池组容量</div><div class="value">${result.packCapacity.toFixed(0)} Ah</div></div>
+      <div class="result-item"><div class="label">电池组容量</div><div class="value">${(result.packEnergy / 1000).toFixed(1)} kWh</div></div>
       <div class="result-item"><div class="label">最终电量</div><div class="value">${result.finalSOC.toFixed(1)}%</div></div>
     </div>`;
 }
