@@ -195,8 +195,9 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
 .bottom-bar {
   position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
   z-index: 100;
-  width: calc(100% - 32px);
-  max-width: 400px;
+  width: calc(50%);
+  min-width: 200px;
+  max-width: 250px;
   height: var(--bar-h);
   background: rgba(240,242,245,0.55);
   backdrop-filter: blur(24px) saturate(160%);
@@ -205,7 +206,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
   box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.5);
   display: flex; align-items: center; justify-content: center;
   gap: 8px;
-  padding: 6px;
+  padding: 5px;
   overflow: hidden;
 }
 .tab-btn {
@@ -655,68 +656,64 @@ function simulateCharge(params) {
   };
 }
 
-// ==================== 放电模拟 ====================
+// ==================== 放电计算 ====================
 function simulateDischarge(params) {
   const { s, isHV, capacity, socStart, mode, powerSet, currentSet } = params;
 
-  const vMinCell = getCellVMin();
   const rInt = 0.030;
-  const dt = 60;
+  const packEnergy = s * (isHV ? 3.8 : 3.7) * capacity;
+  const packCapacity = s * capacity;
+
+  let totalHours;
+  if (mode === 'power') {
+    totalHours = (packEnergy * socStart / 100) / powerSet;
+  } else {
+    totalHours = (capacity * socStart / 100) / currentSet;
+  }
+  const totalSeconds = Math.max(totalHours, 0) * 3600;
 
   const data = { time: [], current: [], voltage: [], power: [], soc: [] };
-  let soc = socStart;
-  let t = 0;
-  const maxT = 365 * 24 * 3600;
+  const steps = 300;
+  const dt = totalSeconds / steps;
 
-  while (soc > 0.01 && t < maxT) {
+  for (let i = 0; i <= steps; i++) {
+    const t = i * dt;
+    const progress = totalSeconds > 0 ? t / totalSeconds : 1;
+    const soc = Math.max(socStart * (1 - progress), 0);
     const cellOCV = getCellOCV(soc, isHV);
-    let I = 0;
+    let I, vCell, vPack, P;
 
     if (mode === 'power') {
-      const ocvPack = s * cellOCV;
       const a = s * rInt;
-      const b = -ocvPack;
-      const c = powerSet;
-      const disc = b * b - 4 * a * (-c);
+      const b = -s * cellOCV;
+      const disc = b * b - 4 * a * powerSet;
       I = disc >= 0 ? (-b - Math.sqrt(disc)) / (2 * a) : 0;
       I = Math.max(I, 0);
+      vCell = cellOCV - I * rInt;
+      vPack = s * vCell;
+      P = vPack * I;
     } else {
       I = currentSet;
+      vCell = cellOCV - I * rInt;
+      vPack = s * vCell;
+      P = vPack * I;
     }
 
-    const vCell = cellOCV - I * rInt;
-    if (vCell < vMinCell) {
-      const vPack = s * vMinCell;
-      data.current.push(+(I).toFixed(3));
-      data.voltage.push(+(vPack).toFixed(1));
-      data.power.push(+(vPack * I).toFixed(1));
-      data.time.push(+(t / 3600).toFixed(2));
-      data.soc.push(0);
-      break;
-    }
-
-    const vPack = s * vCell;
-    const P = vPack * I;
-
+    data.time.push(+(t / 3600).toFixed(4));
     data.current.push(+(I).toFixed(3));
     data.voltage.push(+(vPack).toFixed(1));
     data.power.push(+(P).toFixed(1));
-    data.time.push(+(t / 3600).toFixed(2));
-    data.soc.push(+Math.max(soc, 0).toFixed(2));
-
-    const dSOC = (I * dt) / (capacity * 3600) * 100;
-    soc = Math.max(soc - dSOC, 0);
-    t += dt;
+    data.soc.push(+soc.toFixed(2));
   }
 
   return {
     data,
-    totalTime: t,
-    finalSOC: soc,
-    standbyDays: +(t / 86400).toFixed(1),
-    standbyHours: +(t / 3600).toFixed(1),
-    packCapacity: s * capacity,
-    packEnergy: s * (isHV ? 3.8 : 3.7) * capacity
+    totalTime: totalSeconds,
+    finalSOC: 0,
+    standbyDays: +(totalHours / 24).toFixed(1),
+    standbyHours: +totalHours.toFixed(1),
+    packCapacity,
+    packEnergy
   };
 }
 
@@ -830,10 +827,10 @@ function buildChargeChart(data, result) {
           },
           grid: { color: 'rgba(0,0,0,0.04)' }
         },
-        yI:  { type: 'linear', position: 'left', title: { display: true, text: '电流 (A)', color: CHART_COLORS.current.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.current.border }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
-        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, suggestedMin: vMin - vPad, suggestedMax: vMax + vPad, offset: true },
-        yP:  { type: 'linear', position: 'right', title: { display: true, text: '功率 (W)', color: CHART_COLORS.power.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.power.border }, grid: { drawOnChartArea: false }, beginAtZero: true },
-        ySOC:{ type: 'linear', position: 'right', title: { display: true, text: '电量 (%)', color: CHART_COLORS.soc.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.soc.border }, grid: { drawOnChartArea: false }, min: 0, max: 100, offset: true }
+        yI:  { display: false, type: 'linear', position: 'left', beginAtZero: true },
+        yV:  { display: false, type: 'linear', position: 'left', suggestedMin: vMin - vPad, suggestedMax: vMax + vPad },
+        yP:  { display: false, type: 'linear', position: 'right', beginAtZero: true },
+        ySOC:{ display: false, type: 'linear', position: 'right', min: 0, max: 100 }
       },
       onClick: (evt, elements, chart) => {
         if (elements.length > 0) {
@@ -918,10 +915,10 @@ function buildDischargeChart(data) {
           },
           grid: { color: 'rgba(0,0,0,0.04)' }
         },
-        yI:  { type: 'linear', position: 'left', title: { display: true, text: '电流 (A)', color: CHART_COLORS.current.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.current.border }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
-        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, suggestedMin: vMin - vPad, suggestedMax: vMax + vPad, offset: true },
-        yP:  { type: 'linear', position: 'right', title: { display: true, text: '功率 (W)', color: CHART_COLORS.power.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.power.border }, grid: { drawOnChartArea: false }, beginAtZero: true },
-        ySOC:{ type: 'linear', position: 'right', title: { display: true, text: '电量 (%)', color: CHART_COLORS.soc.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.soc.border }, grid: { drawOnChartArea: false }, min: 0, max: 100, offset: true }
+        yI:  { display: false, type: 'linear', position: 'left', beginAtZero: true },
+        yV:  { display: false, type: 'linear', position: 'left', suggestedMin: vMin - vPad, suggestedMax: vMax + vPad },
+        yP:  { display: false, type: 'linear', position: 'right', beginAtZero: true },
+        ySOC:{ display: false, type: 'linear', position: 'right', min: 0, max: 100 }
       },
       onClick: (evt, elements, chart) => {
         if (elements.length > 0) {
@@ -999,21 +996,21 @@ function showChargeResults(result, mode) {
   const fullTag = notFull ? ' <span style="color:#dc2626;font-size:14px;font-weight:700">（充不满）</span>' : '';
 
   if (mode === 'cc') {
-    const Imax = Math.max(...result.data.current);
+    const Imax = result._optimizedValue != null ? result._optimizedValue : Math.max(...result.data.current);
     const s = parseFloat(document.getElementById('cS').value);
     document.getElementById('cSuggest').innerHTML = `
       <div class="suggest-box${warnCls}">
         <div class="label">建议充电电流</div>
         <div class="value">${Imax.toFixed(1)} A${fullTag}</div>
-        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · ${(Imax / (result.packCapacity / s)).toFixed(2)}C</div>
+        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · ${(Imax / (result.packCapacity / s)).toFixed(2)}C${result._optimizedValue != null ? ' · 已自动优化至预算时间内最低' : ''}</div>
       </div>`;
   } else {
-    const Pmax = Math.max(...result.data.power);
+    const Pmax = result._optimizedValue != null ? result._optimizedValue : Math.max(...result.data.power);
     document.getElementById('cSuggest').innerHTML = `
       <div class="suggest-box${warnCls}">
         <div class="label">建议充电功率</div>
         <div class="value">${Pmax.toFixed(0)} W${fullTag}</div>
-        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · 最大 ${result.packVMax.toFixed(0)}V</div>
+        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · 最大 ${result.packVMax.toFixed(0)}V${result._optimizedValue != null ? ' · 已自动优化至预算时间内最低' : ''}</div>
       </div>`;
   }
 
@@ -1079,6 +1076,42 @@ function setBudget(h) {
   document.getElementById('cBudget').value = h;
 }
 
+// ==================== 二分搜索最优充电参数 ====================
+function optimizeCharge(params, mode) {
+  const maxIter = 50;
+  let lo, hi, paramKey;
+
+  if (mode === 'cc') {
+    lo = 0.1;
+    hi = params.currentSet;
+    paramKey = 'currentSet';
+  } else {
+    lo = 100;
+    hi = params.powerSet;
+    paramKey = 'powerSet';
+  }
+
+  if (hi <= lo) return simulateCharge(params);
+
+  let bestResult = null;
+  for (let i = 0; i < maxIter; i++) {
+    const mid = (lo + hi) / 2;
+    const testParams = { ...params, [paramKey]: mid };
+    const testResult = simulateCharge(testParams);
+    if (testResult.finalSOC >= 99.99) {
+      bestResult = testResult;
+      bestResult._optimizedValue = mid;
+      hi = mid;
+    } else {
+      lo = mid;
+    }
+    if (hi - lo < 0.05) break;
+  }
+
+  if (!bestResult) return simulateCharge(params);
+  return bestResult;
+}
+
 // ==================== 运行模拟 ====================
 function runCharge() {
   const mode = document.querySelector('input[name="cMode"]:checked').value;
@@ -1105,7 +1138,11 @@ function runCharge() {
     budgetH: parseFloat(document.getElementById('cBudget').value) || 8
   };
 
-  const result = simulateCharge(params);
+  let result = simulateCharge(params);
+
+  if (result.finalSOC >= 99.99) {
+    result = optimizeCharge(params, mode);
+  }
 
   document.getElementById('cEmpty').style.display = 'none';
   document.getElementById('cChartCard').style.display = '';
