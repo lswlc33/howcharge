@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>咋充</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤔</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f0f2f5;
+  --card: #ffffff;
+  --primary: #4f46e5;
+  --primary-light: #eef2ff;
+  --text: #1a1a2e;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --orange: #f59e0b;
+  --red: #ef4444;
+  --purple: #8b5cf6;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+  --radius: 16px;
+  --radius-lg: 24px;
+  --bar-h: 60px;
+  --top-h: 56px;
+  --max-w: 800px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-top: var(--top-h);
+  padding-bottom: calc(var(--bar-h) + 32px);
+}
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--top-h);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+}
+.logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--text); }
+.logo span { font-size: 26px; }
+.header-btns { display: flex; gap: 8px; }
+.header-btns a {
+  padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+  text-decoration: none; transition: all 0.2s; cursor: pointer;
+}
+.btn-sponsor { background: var(--primary); color: #fff; }
+.btn-sponsor:hover { background: #4338ca; }
+.btn-about { background: var(--primary-light); color: var(--primary); }
+.btn-about:hover { background: #dbeafe; }
+main { max-width: var(--max-w); margin: 0 auto; padding: 16px; }
+.page { display: none; }
+.page.active { display: block; }
+.card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 17px; font-weight: 700;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title::before {
+  content: '';
+  width: 4px; height: 20px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.form-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.form-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label {
+  font-size: 12px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+input[type="number"], input[type="text"] {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px; color: var(--text);
+  background: var(--bg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+input:disabled { opacity: 0.5; cursor: not-allowed; }
+.input-unit {
+  position: relative;
+}
+.input-unit input { padding-right: 40px; }
+.input-unit .unit {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 12px; color: var(--text3); pointer-events: none;
+}
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-group label {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.radio-group label:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.radio-group input[type="radio"] { display: none; }
+.check-group { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+.check-group input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;
+}
+.check-group label { font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; }
+.sub-form {
+  margin-top: 8px; padding: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+  display: none;
+}
+.sub-form.show { display: block; }
+.section-divider {
+  height: 1px; background: var(--border);
+  margin: 16px 0;
+}
+.result-main {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 16px 0;
+}
+.result-value {
+  font-size: 42px; font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.result-unit { font-size: 16px; font-weight: 600; color: var(--text2); }
+.result-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.result-item {
+  padding: 12px; background: var(--bg); border-radius: 12px;
+}
+.result-item .label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
+.result-item .value { font-size: 18px; font-weight: 700; color: var(--text); margin-top: 2px; }
+.result-item .sub { font-size: 11px; color: var(--text2); }
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 360px;
+}
+.chart-info {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-radius: 12px;
+  display: none;
+  font-size: 13px;
+}
+.chart-info.show { display: block; }
+.chart-info .time-label { font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+.chart-info .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+.chart-info .info-item { text-align: center; }
+.chart-info .info-item .dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.chart-info .info-item .val { font-weight: 700; }
+.chart-info .info-item .lbl { font-size: 11px; color: var(--text3); }
+.empty-hint {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text3);
+  font-size: 14px;
+}
+.empty-hint .icon { font-size: 48px; margin-bottom: 12px; }
+.bottom-bar {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 100;
+  width: calc(100% - 32px);
+  max-width: 400px;
+  height: var(--bar-h);
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 30px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center;
+  gap: 0;
+  overflow: hidden;
+}
+.tab-btn {
+  flex: 1;
+  height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  border: none; background: none;
+  cursor: pointer;
+  font-size: 12px; font-weight: 600;
+  color: var(--text3);
+  transition: all 0.3s;
+  position: relative;
+}
+.tab-btn .icon { font-size: 22px; transition: transform 0.3s; }
+.tab-btn.active { color: var(--primary); }
+.tab-btn.active .icon { transform: scale(1.15); }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+.discharge-form .form-grid {
+  grid-template-columns: 1fr 1fr;
+}
+.mode-switch {
+  display: flex; gap: 8px;
+}
+.mode-switch label {
+  flex: 1;
+  text-align: center;
+}
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.progress-bar .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--purple));
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tag-blue { background: #dbeafe; color: #2563eb; }
+.tag-green { background: #d1fae5; color: #059669; }
+.tag-orange { background: #fef3c7; color: #d97706; }
+.tag-red { background: #fee2e2; color: #dc2626; }
+.btn-generate {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 16px;
+}
+.btn-generate:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79,70,229,0.4); }
+.btn-generate:active { transform: translateY(0); }
+.suggest-box {
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--primary-light), #f0f0ff);
+  border-radius: 14px;
+  border: 1px solid rgba(79,70,229,0.15);
+}
+.suggest-box .label { font-size: 12px; color: var(--text2); font-weight: 600; }
+.suggest-box .value { font-size: 28px; font-weight: 800; color: var(--primary); margin-top: 2px; }
+.suggest-box .note { font-size: 12px; color: var(--text3); margin-top: 2px; }
+@media (max-width: 520px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid-4 { grid-template-columns: 1fr 1fr; }
+  .form-grid-3 { grid-template-columns: 1fr; }
+  .result-grid { grid-template-columns: 1fr 1fr; }
+  .chart-info .info-grid { grid-template-columns: 1fr 1fr; }
+  main { padding: 12px; }
+  .card { padding: 18px; }
+  .chart-container { height: 280px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span>🤔</span> 咋充
+  </div>
+  <div class="header-btns">
+    <a class="btn-about" id="btnAbout">关于</a>
+    <a class="btn-sponsor" id="btnSponsor">赞助</a>
+  </div>
+</header>
+
+<main>
+  <!-- ==================== 充电页 ==================== -->
+  <div id="pageCharge" class="page active">
+
+    <div class="card">
+      <div class="card-title">电池设置</div>
+      <div class="form-grid form-grid-4">
+        <div class="form-group"><label>串数 (S)</label><input type="number" id="cS" value="21" min="1" max="200"></div>
+        <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="cHV"><label for="cHV">高压 (4.3V)</label></div></div>
+        <div class="form-group"><label>容量</label><div class="input-unit"><input type="number" id="cCap" value="50" min="0.1" step="0.1"><span class="unit">Ah</span></div></div>
+        <div class="form-group"><label>当前电量</label><div class="input-unit"><input type="number" id="cSoc" value="20" min="0" max="100"><span class="unit">%</span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">充电设置</div>
+      <div class="form-grid">
+        <div class="form-group full"><label>充电模式</label>
+          <div class="radio-group" id="cModeGroup">
+            <label><input type="radio" name="cMode" value="cc" checked> 恒流 (CC)</label>
+            <label><input type="radio" name="cMode" value="cp"> 恒功率 (CP)</label>
+          </div>
+        </div>
+        <div class="form-group" id="cCurrentGroup"><label>充电电流</label><div class="input-unit"><input type="number" id="cCurrent" value="15" min="0.1" step="0.1"><span class="unit">A</span></div></div>
+        <div class="form-group" id="cPowerGroup" style="display:none"><label>充电功率</label><div class="input-unit"><input type="number" id="cPower" value="1850" min="100" step="50"><span class="unit">W</span></div></div>
+        <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="cLimitOn"><label for="cLimitOn">桩限流</label></div></div>
+      </div>
+      <div class="sub-form" id="cLimitForm">
+        <div class="form-grid form-grid-3">
+          <div class="form-group"><div class="radio-group" id="cLimitTypeGroup"><label><input type="radio" name="cLimitType" value="current" checked> 限流</label><label><input type="radio" name="cLimitType" value="power"> 限功率</label></div></div>
+          <div class="form-group" id="cLimitCurrentGroup"><label>限流值</label><div class="input-unit"><input type="number" id="cLimitCurrent" value="8" min="0.1" step="0.1"><span class="unit">A</span></div></div>
+          <div class="form-group" id="cLimitPowerGroup" style="display:none"><label>限功率值</label><div class="input-unit"><input type="number" id="cLimitPower" value="800" min="100" step="50"><span class="unit">W</span></div></div>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="form-group"><div class="check-group"><input type="checkbox" id="cTrickleOn"><label for="cTrickleOn">涓流充电</label></div></div>
+        <div class="form-group"><label>预算时间</label><div class="input-unit"><input type="number" id="cBudget" value="8" min="0.5" step="0.5"><span class="unit">h</span></div></div>
+      </div>
+      <div class="sub-form" id="cTrickleForm">
+        <div class="form-grid form-grid-3">
+          <div class="form-group"><label>开始电压 (每节)</label><div class="input-unit"><input type="number" id="cTrickleV" value="3.0" min="2.0" max="4.2" step="0.05"><span class="unit">V</span></div></div>
+          <div class="form-group" id="cTrickleCurrentGroup"><label>涓流电流</label><div class="input-unit"><input type="number" id="cTrickleI" value="2" min="0.1" step="0.1"><span class="unit">A</span></div></div>
+          <div class="form-group" id="cTricklePowerGroup" style="display:none"><label>涓流功率</label><div class="input-unit"><input type="number" id="cTrickleP" value="500" min="10" step="10"><span class="unit">W</span></div></div>
+        </div>
+      </div>
+      <button class="btn-generate" onclick="runCharge()">生成充电曲线</button>
+    </div>
+
+    <div class="card" id="cResultCard" style="display:none">
+      <div class="card-title">充电预测</div>
+      <div id="cSuggest"></div>
+      <div class="section-divider"></div>
+      <div id="cResultMain"></div>
+      <div id="cResultGrid"></div>
+    </div>
+
+    <div class="card" id="cChartCard" style="display:none">
+      <div class="card-title">充电曲线</div>
+      <div class="chart-container">
+        <canvas id="cChart"></canvas>
+      </div>
+      <div class="chart-info" id="cChartInfo">
+        <div class="time-label" id="cChartTime"></div>
+        <div class="info-grid" id="cChartGrid"></div>
+      </div>
+    </div>
+
+    <div id="cEmpty" class="card">
+      <div class="empty-hint">
+        <div class="icon">📈</div>
+        调整参数后点击「生成充电曲线」查看预测结果
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 放电页 ==================== -->
+  <div id="pageDischarge" class="page">
+
+    <div class="card">
+      <div class="card-title">电池设置</div>
+      <div class="form-grid form-grid-4">
+        <div class="form-group"><label>串数 (S)</label><input type="number" id="dS" value="21" min="1" max="200"></div>
+        <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="dHV"><label for="dHV">高压 (4.3V)</label></div></div>
+        <div class="form-group"><label>容量</label><div class="input-unit"><input type="number" id="dCap" value="50" min="0.1" step="0.1"><span class="unit">Ah</span></div></div>
+        <div class="form-group"><label>当前电量</label><div class="input-unit"><input type="number" id="dSoc" value="100" min="0" max="100"><span class="unit">%</span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">放电设置</div>
+      <div class="form-grid">
+        <div class="form-group full"><label>功耗模式</label>
+          <div class="radio-group" id="dModeGroup">
+            <label><input type="radio" name="dMode" value="power" checked> 待机功耗</label>
+            <label><input type="radio" name="dMode" value="current"> 待机电流</label>
+          </div>
+        </div>
+        <div class="form-group" id="dPowerGroup"><label>待机功耗</label><div class="input-unit"><input type="number" id="dPower" value="50" min="0.1" step="1"><span class="unit">W</span></div></div>
+        <div class="form-group" id="dCurrentGroup" style="display:none"><label>待机电流</label><div class="input-unit"><input type="number" id="dCurrent" value="1" min="0.01" step="0.01"><span class="unit">A</span></div></div>
+      </div>
+      <button class="btn-generate" onclick="runDischarge()">生成放电曲线</button>
+    </div>
+
+    <div class="card" id="dResultCard" style="display:none">
+      <div class="card-title">放电预测</div>
+      <div id="dResultMain"></div>
+      <div id="dResultGrid"></div>
+    </div>
+
+    <div class="card" id="dChartCard" style="display:none">
+      <div class="card-title">放电曲线</div>
+      <div class="chart-container">
+        <canvas id="dChart"></canvas>
+      </div>
+      <div class="chart-info" id="dChartInfo">
+        <div class="time-label" id="dChartTime"></div>
+        <div class="info-grid" id="dChartGrid"></div>
+      </div>
+    </div>
+
+    <div id="dEmpty" class="card">
+      <div class="empty-hint">
+        <div class="icon">📉</div>
+        调整参数后点击「生成放电曲线」查看预测结果
+      </div>
+    </div>
+  </div>
+</main>
+
+<nav class="bottom-bar">
+  <button class="tab-btn active" data-page="pageCharge">
+    <span class="icon">⚡</span>
+    <span>充电</span>
+  </button>
+  <button class="tab-btn" data-page="pageDischarge">
+    <span class="icon">🔋</span>
+    <span>放电</span>
+  </button>
+</nav>
+
+<script>
+// ==================== 配置（可自定义） ====================
+const SPONSOR_URL = 'javascript:void(0)';
+const ABOUT_URL = 'javascript:void(0)';
+
+// ==================== OCV 曲线 ====================
+const OCV_SOC = [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
+const OCV_NORM = [2.50, 2.80, 3.10, 3.30, 3.45, 3.55, 3.60, 3.63, 3.65, 3.67, 3.70, 3.73, 3.77, 3.82, 3.87, 3.92, 3.98, 4.04, 4.10, 4.15, 4.18, 4.20];
+const OCV_HV   = [2.50, 2.80, 3.10, 3.30, 3.45, 3.55, 3.62, 3.67, 3.72, 3.77, 3.82, 3.87, 3.92, 3.97, 4.02, 4.07, 4.12, 4.17, 4.22, 4.27, 4.29, 4.30];
+
+function lerp(table_x, table_y, x) {
+  if (x <= table_x[0]) return table_y[0];
+  if (x >= table_x[table_x.length - 1]) return table_y[table_y.length - 1];
+  for (let i = 0; i < table_x.length - 1; i++) {
+    if (x >= table_x[i] && x <= table_x[i + 1]) {
+      const t = (x - table_x[i]) / (table_x[i + 1] - table_x[i]);
+      return table_y[i] + t * (table_y[i + 1] - table_y[i]);
+    }
+  }
+  return table_y[table_y.length - 1];
+}
+
+function getCellOCV(soc, isHV) {
+  return lerp(OCV_SOC, isHV ? OCV_HV : OCV_NORM, soc);
+}
+
+function getCellVMax(isHV) { return isHV ? 4.30 : 4.20; }
+function getCellVMin() { return 2.50; }
+
+function getPackVoltage(s, isHV, soc, current, rInt) {
+  const ocv = getCellOCV(soc, isHV);
+  return s * (ocv + current * rInt);
+}
+
+// ==================== 充电模拟 ====================
+function simulateCharge(params) {
+  const { s, isHV, capacity, socStart, mode, currentSet, powerSet,
+          limitOn, limitType, limitCurrent, limitPower,
+          trickleOn, trickleV, trickleI, trickleP, budgetH } = params;
+
+  const vMaxCell = getCellVMax(isHV);
+  const vMinCell = getCellVMin();
+  const rInt = 0.030;
+  const dt = 30;
+  const maxT = budgetH * 3600;
+  const cutoffI = capacity * 0.05;
+
+  const data = { time: [], current: [], voltage: [], power: [], soc: [] };
+  const phases = [];
+  let soc = socStart;
+  let t = 0;
+  let phase = 'idle';
+
+  function determinePhase() {
+    const cellV = getCellOCV(soc, isHV);
+    if (trickleOn && cellV < trickleV) return 'trickle';
+    if (cellV >= vMaxCell - 0.001) return 'cv';
+    return mode === 'cc' ? 'cc' : 'cp';
+  }
+  phase = determinePhase();
+  let phaseStartTime = 0;
+  phases.push({ name: phase, startSOC: soc, startTime: 0 });
+
+  function record() {
+    data.time.push(+(t / 3600).toFixed(4));
+    data.soc.push(+soc.toFixed(2));
+  }
+
+  while (soc < 99.99 && t < maxT) {
+    const cellOCV = getCellOCV(soc, isHV);
+    let I = 0;
+
+    if (phase === 'trickle') {
+      if (mode === 'cc') {
+        I = trickleI;
+      } else {
+        const vPack = s * cellOCV;
+        I = (trickleP / vPack) || 0;
+      }
+      const cellV = cellOCV + I * rInt;
+      if (cellV >= trickleV) {
+        phases[phases.length - 1].endSOC = soc;
+        phases[phases.length - 1].endTime = t;
+        phase = (mode === 'cc') ? 'cc' : 'cp';
+        if (cellOCV >= vMaxCell - 0.001) phase = 'cv';
+        phases.push({ name: phase, startSOC: soc, startTime: t });
+        phaseStartTime = t;
+        continue;
+      }
+    } else if (phase === 'cc') {
+      I = currentSet;
+      if (limitOn) {
+        if (limitType === 'current') I = Math.min(I, limitCurrent);
+        else {
+          const vEst = s * (cellOCV + I * rInt);
+          if (limitPower > 0) I = Math.min(I, limitPower / vEst);
+        }
+      }
+      const cellV = cellOCV + I * rInt;
+      if (cellV >= vMaxCell) {
+        phases[phases.length - 1].endSOC = soc;
+        phases[phases.length - 1].endTime = t;
+        phase = 'cv';
+        phases.push({ name: 'cv', startSOC: soc, startTime: t });
+        phaseStartTime = t;
+        continue;
+      }
+    } else if (phase === 'cp') {
+      const ocvPack = s * cellOCV;
+      const a = s * rInt;
+      const b = ocvPack;
+      let P = powerSet;
+      if (limitOn && limitType === 'power') P = Math.min(P, limitPower);
+      const disc = b * b + 4 * a * P;
+      I = disc >= 0 ? (-b + Math.sqrt(disc)) / (2 * a) : 0;
+      I = Math.max(I, 0);
+      const cellV = cellOCV + I * rInt;
+      if (cellV >= vMaxCell) {
+        phases[phases.length - 1].endSOC = soc;
+        phases[phases.length - 1].endTime = t;
+        phase = 'cv';
+        phases.push({ name: 'cv', startSOC: soc, startTime: t });
+        phaseStartTime = t;
+        continue;
+      }
+    } else if (phase === 'cv') {
+      const vCell = vMaxCell;
+      I = (vCell - cellOCV) / rInt;
+      if (I < 0) I = 0;
+      if (I < cutoffI) {
+        soc = 100;
+        const vPack = s * vCell;
+        data.current.push(+(I).toFixed(2));
+        data.voltage.push(+(vPack).toFixed(1));
+        data.power.push(+(vPack * I).toFixed(1));
+        record();
+        break;
+      }
+    }
+
+    I = Math.max(I, 0);
+    const vCell = cellOCV + I * rInt;
+    const vPack = s * vCell;
+    const P = vPack * I;
+
+    data.current.push(+(I).toFixed(2));
+    data.voltage.push(+(vPack).toFixed(1));
+    data.power.push(+(P).toFixed(1));
+    record();
+
+    const dSOC = (I * dt) / (capacity * 3600) * 100;
+    soc = Math.min(soc + dSOC, 100);
+    t += dt;
+
+    if (phase !== 'trickle' && phase !== 'cv') {
+      const cellVCheck = getCellOCV(soc, isHV) + I * rInt;
+      if (cellVCheck >= vMaxCell && phase !== 'cv') {
+        phases[phases.length - 1].endSOC = soc;
+        phases[phases.length - 1].endTime = t;
+        phase = 'cv';
+        phases.push({ name: 'cv', startSOC: soc, startTime: t });
+        phaseStartTime = t;
+      }
+    }
+  }
+
+  phases[phases.length - 1].endSOC = soc;
+  phases[phases.length - 1].endTime = t;
+
+  return {
+    data,
+    phases,
+    totalTime: t,
+    finalSOC: soc,
+    packCapacity: s * capacity,
+    packVMax: s * vMaxCell,
+    packVMin: s * getCellVMin()
+  };
+}
+
+// ==================== 放电模拟 ====================
+function simulateDischarge(params) {
+  const { s, isHV, capacity, socStart, mode, powerSet, currentSet } = params;
+
+  const vMinCell = getCellVMin();
+  const rInt = 0.030;
+  const dt = 60;
+
+  const data = { time: [], current: [], voltage: [], power: [], soc: [] };
+  let soc = socStart;
+  let t = 0;
+  const maxT = 365 * 24 * 3600;
+
+  while (soc > 0.01 && t < maxT) {
+    const cellOCV = getCellOCV(soc, isHV);
+    let I = 0;
+
+    if (mode === 'power') {
+      const ocvPack = s * cellOCV;
+      const a = s * rInt;
+      const b = -ocvPack;
+      const c = powerSet;
+      const disc = b * b - 4 * a * (-c);
+      I = disc >= 0 ? (-b - Math.sqrt(disc)) / (2 * a) : 0;
+      I = Math.max(I, 0);
+    } else {
+      I = currentSet;
+    }
+
+    const vCell = cellOCV - I * rInt;
+    if (vCell < vMinCell) {
+      const vPack = s * vMinCell;
+      data.current.push(+(I).toFixed(3));
+      data.voltage.push(+(vPack).toFixed(1));
+      data.power.push(+(vPack * I).toFixed(1));
+      data.time.push(+(t / 3600).toFixed(2));
+      data.soc.push(0);
+      break;
+    }
+
+    const vPack = s * vCell;
+    const P = vPack * I;
+
+    data.current.push(+(I).toFixed(3));
+    data.voltage.push(+(vPack).toFixed(1));
+    data.power.push(+(P).toFixed(1));
+    data.time.push(+(t / 3600).toFixed(2));
+    data.soc.push(+Math.max(soc, 0).toFixed(2));
+
+    const dSOC = (I * dt) / (capacity * 3600) * 100;
+    soc = Math.max(soc - dSOC, 0);
+    t += dt;
+  }
+
+  return {
+    data,
+    totalTime: t,
+    finalSOC: soc,
+    standbyDays: +(t / 86400).toFixed(1),
+    standbyHours: +(t / 3600).toFixed(1),
+    packCapacity: s * capacity
+  };
+}
+
+// ==================== Chart.js 配置 ====================
+const CHART_COLORS = {
+  current: { border: '#3b82f6', bg: 'rgba(59,130,246,0.08)' },
+  voltage: { border: '#10b981', bg: 'rgba(16,185,129,0.08)' },
+  power:   { border: '#f59e0b', bg: 'rgba(245,158,11,0.08)' },
+  soc:     { border: '#ef4444', bg: 'rgba(239,68,68,0.08)' }
+};
+
+const verticalLinePlugin = {
+  id: 'vLine',
+  afterDraw(chart) {
+    if (chart._vLineX == null) return;
+    const { ctx, chartArea: { top, bottom } } = chart;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(chart._vLineX, top);
+    ctx.lineTo(chart._vLineX, bottom);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(79,70,229,0.35)';
+    ctx.setLineDash([6, 4]);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+Chart.register(verticalLinePlugin);
+
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}小时${m}分钟`;
+  return `${m}分钟`;
+}
+
+function formatTimeH(seconds) {
+  return (seconds / 3600).toFixed(1);
+}
+
+let cChartInstance = null;
+let dChartInstance = null;
+
+function buildChargeChart(data, result) {
+  const ctx = document.getElementById('cChart').getContext('2d');
+  if (cChartInstance) cChartInstance.destroy();
+
+  cChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.time.map(t => t.toFixed(2)),
+      datasets: [
+        {
+          label: '电流 (A)',
+          data: data.current,
+          borderColor: CHART_COLORS.current.border,
+          backgroundColor: CHART_COLORS.current.bg,
+          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'yI', fill: false, order: 2
+        },
+        {
+          label: '电压 (V)',
+          data: data.voltage,
+          borderColor: CHART_COLORS.voltage.border,
+          backgroundColor: CHART_COLORS.voltage.bg,
+          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'yV', fill: false, order: 3
+        },
+        {
+          label: '功率 (W)',
+          data: data.power,
+          borderColor: CHART_COLORS.power.border,
+          backgroundColor: CHART_COLORS.power.bg,
+          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'yP', fill: false, order: 4
+        },
+        {
+          label: '电量 (%)',
+          data: data.soc,
+          borderColor: CHART_COLORS.soc.border,
+          backgroundColor: CHART_COLORS.soc.bg,
+          borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'ySOC', fill: true, order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 } }
+        },
+        tooltip: { enabled: false, external: (ctx) => externalTooltip(ctx, 'cChartInfo', 'cChartTime', 'cChartGrid') }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: '时间 (h)', font: { size: 12, weight: '600' } },
+          ticks: {
+            maxTicksLimit: 10,
+            callback: function(val, idx) {
+              const v = parseFloat(this.getLabelForValue(val));
+              return v.toFixed(1) + 'h';
+            }
+          },
+          grid: { color: 'rgba(0,0,0,0.04)' }
+        },
+        yI:  { type: 'linear', position: 'left', title: { display: true, text: '电流 (A)', color: CHART_COLORS.current.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.current.border }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
+        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, beginAtZero: false, offset: true },
+        yP:  { type: 'linear', position: 'right', title: { display: true, text: '功率 (W)', color: CHART_COLORS.power.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.power.border }, grid: { drawOnChartArea: false }, beginAtZero: true },
+        ySOC:{ type: 'linear', position: 'right', title: { display: true, text: '电量 (%)', color: CHART_COLORS.soc.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.soc.border }, grid: { drawOnChartArea: false }, min: 0, max: 100, offset: true }
+      },
+      onClick: (evt, elements, chart) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index;
+          const meta = chart.getDatasetMeta(0);
+          chart._vLineX = meta.data[idx]?.x ?? null;
+          chart._vLineIdx = idx;
+          chart.draw();
+          showPointInfo('cChartInfo', 'cChartTime', 'cChartGrid', data, idx);
+        }
+      }
+    }
+  });
+}
+
+function buildDischargeChart(data) {
+  const ctx = document.getElementById('dChart').getContext('2d');
+  if (dChartInstance) dChartInstance.destroy();
+
+  const totalH = data.time[data.time.length - 1] || 1;
+  const isLong = totalH > 48;
+
+  dChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.time.map(t => t.toFixed(2)),
+      datasets: [
+        {
+          label: '电流 (A)',
+          data: data.current,
+          borderColor: CHART_COLORS.current.border,
+          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'yI', fill: false, order: 2
+        },
+        {
+          label: '电压 (V)',
+          data: data.voltage,
+          borderColor: CHART_COLORS.voltage.border,
+          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'yV', fill: false, order: 3
+        },
+        {
+          label: '功率 (W)',
+          data: data.power,
+          borderColor: CHART_COLORS.power.border,
+          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'yP', fill: false, order: 4
+        },
+        {
+          label: '电量 (%)',
+          data: data.soc,
+          borderColor: CHART_COLORS.soc.border,
+          borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.3, yAxisID: 'ySOC', fill: true, order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 } }
+        },
+        tooltip: { enabled: false, external: (ctx) => externalTooltip(ctx, 'dChartInfo', 'dChartTime', 'dChartGrid') }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: isLong ? '时间 (天)' : '时间 (h)', font: { size: 12, weight: '600' } },
+          ticks: {
+            maxTicksLimit: 10,
+            callback: function(val) {
+              const h = parseFloat(this.getLabelForValue(val));
+              if (isLong) return (h / 24).toFixed(0) + 'd';
+              return h.toFixed(0) + 'h';
+            }
+          },
+          grid: { color: 'rgba(0,0,0,0.04)' }
+        },
+        yI:  { type: 'linear', position: 'left', title: { display: true, text: '电流 (A)', color: CHART_COLORS.current.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.current.border }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
+        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, beginAtZero: false, offset: true },
+        yP:  { type: 'linear', position: 'right', title: { display: true, text: '功率 (W)', color: CHART_COLORS.power.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.power.border }, grid: { drawOnChartArea: false }, beginAtZero: true },
+        ySOC:{ type: 'linear', position: 'right', title: { display: true, text: '电量 (%)', color: CHART_COLORS.soc.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.soc.border }, grid: { drawOnChartArea: false }, min: 0, max: 100, offset: true }
+      },
+      onClick: (evt, elements, chart) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index;
+          const meta = chart.getDatasetMeta(0);
+          chart._vLineX = meta.data[idx]?.x ?? null;
+          chart._vLineIdx = idx;
+          chart.draw();
+          showPointInfo('dChartInfo', 'dChartTime', 'dChartGrid', data, idx);
+        }
+      }
+    }
+  });
+}
+
+function externalTooltip(context, infoId, timeId, gridId) {
+  const { chart, tooltip } = context;
+  const el = document.getElementById(infoId);
+  if (!el) return;
+  if (tooltip.opacity === 0) { el.classList.remove('show'); return; }
+  const idx = tooltip.dataPoints?.[0]?.dataIndex;
+  if (idx == null) return;
+  const data = chart.data;
+  const time = parseFloat(data.labels[idx]);
+  const timeStr = time < 1 ? `${(time * 60).toFixed(0)}分钟` : time < 48 ? `${time.toFixed(1)}小时` : `${(time / 24).toFixed(1)}天`;
+  document.getElementById(timeId).textContent = `⏱ ${timeStr}`;
+
+  const ds = data.datasets;
+  const items = [
+    { label: '电流', value: ds[0].data[idx], unit: 'A', color: CHART_COLORS.current.border },
+    { label: '电压', value: ds[1].data[idx], unit: 'V', color: CHART_COLORS.voltage.border },
+    { label: '功率', value: ds[2].data[idx], unit: 'W', color: CHART_COLORS.power.border },
+    { label: '电量', value: ds[3].data[idx], unit: '%', color: CHART_COLORS.soc.border }
+  ];
+  document.getElementById(gridId).innerHTML = items.map(it =>
+    `<div class="info-item">
+      <span class="dot" style="background:${it.color}"></span>
+      <span class="val">${it.value ?? '-'}</span> <span style="font-size:11px;color:var(--text3)">${it.unit}</span>
+      <div class="lbl">${it.label}</div>
+    </div>`
+  ).join('');
+  el.classList.add('show');
+}
+
+function showPointInfo(infoId, timeId, gridId, data, idx) {
+  const time = data.time[idx];
+  const timeStr = time < 1 ? `${(time * 60).toFixed(0)}分钟` : time < 48 ? `${time.toFixed(1)}小时` : `${(time / 24).toFixed(1)}天`;
+  document.getElementById(timeId).textContent = `⏱ ${timeStr}`;
+  const items = [
+    { label: '电流', value: data.current[idx], unit: 'A', color: CHART_COLORS.current.border },
+    { label: '电压', value: data.voltage[idx], unit: 'V', color: CHART_COLORS.voltage.border },
+    { label: '功率', value: data.power[idx], unit: 'W', color: CHART_COLORS.power.border },
+    { label: '电量', value: data.soc[idx], unit: '%', color: CHART_COLORS.soc.border }
+  ];
+  document.getElementById(gridId).innerHTML = items.map(it =>
+    `<div class="info-item">
+      <span class="dot" style="background:${it.color}"></span>
+      <span class="val">${it.value ?? '-'}</span> <span style="font-size:11px;color:var(--text3)">${it.unit}</span>
+      <div class="lbl">${it.label}</div>
+    </div>`
+  ).join('');
+  document.getElementById(infoId).classList.add('show');
+}
+
+// ==================== 结果展示 ====================
+function showChargeResults(result, mode) {
+  const card = document.getElementById('cResultCard');
+  card.style.display = '';
+
+  const totalH = result.totalTime / 3600;
+  const finalSOC = result.finalSOC;
+
+  if (mode === 'cc') {
+    const I = parseFloat(document.getElementById('cCurrent').value);
+    document.getElementById('cSuggest').innerHTML = `
+      <div class="suggest-box">
+        <div class="label">建议充电电流</div>
+        <div class="value">${I.toFixed(1)} A</div>
+        <div class="note">电池组 ${result.packCapacity.toFixed(0)}Ah · ${(I / (result.packCapacity / parseFloat(document.getElementById('cS').value))).toFixed(2)}C</div>
+      </div>`;
+  } else {
+    const P = parseFloat(document.getElementById('cPower').value);
+    document.getElementById('cSuggest').innerHTML = `
+      <div class="suggest-box">
+        <div class="label">建议充电功率</div>
+        <div class="value">${(P / 1000).toFixed(1)} kW</div>
+        <div class="note">电池组 ${result.packCapacity.toFixed(0)}Ah · 最大 ${result.packVMax.toFixed(0)}V</div>
+      </div>`;
+  }
+
+  document.getElementById('cResultMain').innerHTML = `
+    <div class="result-main">
+      <div class="result-value">${totalH >= 1 ? totalH.toFixed(1) : (totalH * 60).toFixed(0)}</div>
+      <div class="result-unit">${totalH >= 1 ? '小时' : '分钟'}</div>
+    </div>
+    <div class="result-sub">${formatTime(result.totalTime)} · ${finalSOC.toFixed(1)}%</div>`;
+
+  const phaseNames = { cc: '恒流 CC', cv: '恒压 CV', cp: '恒功率 CP', trickle: '涓流' };
+  let phaseHTML = '<div class="result-grid">';
+  phaseHTML += `
+    <div class="result-item"><div class="label">预计充满时间</div><div class="value">${formatTimeH(result.totalTime)} h</div></div>
+    <div class="result-item"><div class="label">最终电量</div><div class="value">${finalSOC.toFixed(1)}%</div></div>
+    <div class="result-item"><div class="label">电池组容量</div><div class="value">${result.packCapacity.toFixed(0)} Ah</div><div class="sub">${result.packVMin.toFixed(0)}V ~ ${result.packVMax.toFixed(0)}V</div></div>
+    <div class="result-item"><div class="label">充电阶段</div><div class="value">${result.phases.length} 段</div></div>`;
+  phaseHTML += '</div>';
+
+  if (result.phases.length > 0) {
+    phaseHTML += '<div style="margin-top:12px"><table style="width:100%;font-size:13px;border-collapse:collapse">';
+    phaseHTML += '<tr style="color:var(--text3);text-align:left"><th style="padding:6px 8px">阶段</th><th>时长</th><th>SOC区间</th></tr>';
+    result.phases.forEach(p => {
+      const dur = (p.endTime - p.startTime) / 60;
+      phaseHTML += `<tr style="border-top:1px solid var(--border)">
+        <td style="padding:8px"><span class="tag tag-blue">${phaseNames[p.name] || p.name}</span></td>
+        <td>${dur.toFixed(0)}分钟</td>
+        <td>${p.startSOC.toFixed(1)}% → ${p.endSOC.toFixed(1)}%</td>
+      </tr>`;
+    });
+    phaseHTML += '</table></div>';
+  }
+  document.getElementById('cResultGrid').innerHTML = phaseHTML;
+}
+
+function showDischargeResults(result) {
+  const card = document.getElementById('dResultCard');
+  card.style.display = '';
+
+  const days = result.standbyDays;
+  let timeStr, unitStr;
+  if (days >= 1) { timeStr = days.toFixed(1); unitStr = '天'; }
+  else { timeStr = result.standbyHours.toFixed(1); unitStr = '小时'; }
+
+  document.getElementById('dResultMain').innerHTML = `
+    <div class="result-main">
+      <div class="result-value">${timeStr}</div>
+      <div class="result-unit">${unitStr}</div>
+    </div>
+    <div class="result-sub">预计待机时长 · 放电至 ${result.finalSOC.toFixed(1)}%</div>`;
+
+  document.getElementById('dResultGrid').innerHTML = `
+    <div class="result-grid">
+      <div class="result-item"><div class="label">待机天数</div><div class="value">${days.toFixed(1)} 天</div></div>
+      <div class="result-item"><div class="label">待机小时</div><div class="value">${result.standbyHours.toFixed(0)} h</div></div>
+      <div class="result-item"><div class="label">电池组容量</div><div class="value">${result.packCapacity.toFixed(0)} Ah</div></div>
+      <div class="result-item"><div class="label">最终电量</div><div class="value">${result.finalSOC.toFixed(1)}%</div></div>
+    </div>`;
+}
+
+// ==================== 运行模拟 ====================
+function runCharge() {
+  const mode = document.querySelector('input[name="cMode"]:checked').value;
+  const limitOn = document.getElementById('cLimitOn').checked;
+  const limitType = document.querySelector('input[name="cLimitType"]:checked')?.value || 'current';
+  const trickleOn = document.getElementById('cTrickleOn').checked;
+
+  const params = {
+    s: parseFloat(document.getElementById('cS').value) || 21,
+    isHV: document.getElementById('cHV').checked,
+    capacity: parseFloat(document.getElementById('cCap').value) || 50,
+    socStart: parseFloat(document.getElementById('cSoc').value) || 20,
+    mode,
+    currentSet: parseFloat(document.getElementById('cCurrent').value) || 32,
+    powerSet: parseFloat(document.getElementById('cPower').value) || 7000,
+    limitOn,
+    limitType,
+    limitCurrent: parseFloat(document.getElementById('cLimitCurrent').value) || 32,
+    limitPower: parseFloat(document.getElementById('cLimitPower').value) || 7000,
+    trickleOn,
+    trickleV: parseFloat(document.getElementById('cTrickleV').value) || 3.0,
+    trickleI: parseFloat(document.getElementById('cTrickleI').value) || 2,
+    trickleP: parseFloat(document.getElementById('cTrickleP').value) || 500,
+    budgetH: parseFloat(document.getElementById('cBudget').value) || 8
+  };
+
+  const result = simulateCharge(params);
+
+  document.getElementById('cEmpty').style.display = 'none';
+  document.getElementById('cChartCard').style.display = '';
+
+  showChargeResults(result, mode);
+  buildChargeChart(result.data, result);
+}
+
+function runDischarge() {
+  const mode = document.querySelector('input[name="dMode"]:checked').value;
+
+  const params = {
+    s: parseFloat(document.getElementById('dS').value) || 21,
+    isHV: document.getElementById('dHV').checked,
+    capacity: parseFloat(document.getElementById('dCap').value) || 50,
+    socStart: parseFloat(document.getElementById('dSoc').value) || 100,
+    mode,
+    powerSet: parseFloat(document.getElementById('dPower').value) || 50,
+    currentSet: parseFloat(document.getElementById('dCurrent').value) || 1
+  };
+
+  const result = simulateDischarge(params);
+
+  document.getElementById('dEmpty').style.display = 'none';
+  document.getElementById('dChartCard').style.display = '';
+
+  showDischargeResults(result);
+  buildDischargeChart(result.data);
+}
+
+// ==================== UI 交互 ====================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(btn.dataset.page).classList.add('active');
+  });
+});
+
+document.getElementById('btnSponsor').href = SPONSOR_URL;
+document.getElementById('btnAbout').href = ABOUT_URL;
+
+function syncModeUI() {
+  const m = document.querySelector('input[name="cMode"]:checked').value;
+  document.getElementById('cCurrentGroup').style.display = m === 'cc' ? '' : 'none';
+  document.getElementById('cPowerGroup').style.display = m === 'cp' ? '' : 'none';
+  document.getElementById('cTrickleCurrentGroup').style.display = m === 'cc' ? '' : 'none';
+  document.getElementById('cTricklePowerGroup').style.display = m === 'cp' ? '' : 'none';
+  const lt = document.querySelector('input[name="cLimitType"]:checked')?.value || 'current';
+  document.getElementById('cLimitCurrentGroup').style.display = lt === 'current' ? '' : 'none';
+  document.getElementById('cLimitPowerGroup').style.display = lt === 'power' ? '' : 'none';
+}
+
+function syncLimitUI() {
+  const on = document.getElementById('cLimitOn').checked;
+  document.getElementById('cLimitForm').classList.toggle('show', on);
+}
+
+function syncTrickleUI() {
+  const on = document.getElementById('cTrickleOn').checked;
+  document.getElementById('cTrickleForm').classList.toggle('show', on);
+}
+
+function syncDischargeModeUI() {
+  const m = document.querySelector('input[name="dMode"]:checked').value;
+  document.getElementById('dPowerGroup').style.display = m === 'power' ? '' : 'none';
+  document.getElementById('dCurrentGroup').style.display = m === 'current' ? '' : 'none';
+}
+
+document.querySelectorAll('input[name="cMode"]').forEach(r => r.addEventListener('change', syncModeUI));
+document.querySelectorAll('input[name="cLimitType"]').forEach(r => r.addEventListener('change', syncModeUI));
+document.getElementById('cLimitOn').addEventListener('change', syncLimitUI);
+document.getElementById('cTrickleOn').addEventListener('change', syncTrickleUI);
+document.querySelectorAll('input[name="dMode"]').forEach(r => r.addEventListener('change', syncDischargeModeUI));
+
+syncModeUI();
+syncLimitUI();
+syncTrickleUI();
+syncDischargeModeUI();
+</script>
+</body>
+</html>
