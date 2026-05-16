@@ -342,7 +342,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
     <div class="card">
       <div class="card-title">电池设置</div>
       <div class="form-grid form-grid-4">
-        <div class="form-group"><label>串数 (S)</label><input type="number" id="cS" value="21" min="1" max="200"></div>
+        <div class="form-group"><label>串数 (S)</label><input type="number" id="cS" value="20" min="1" max="200"></div>
         <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="cHV"><label for="cHV">高压 (4.3V)</label></div></div>
         <div class="form-group"><label>容量</label><div class="input-unit"><input type="number" id="cCap" value="50" min="0.1" step="0.1"><span class="unit">Ah</span></div></div>
         <div class="form-group"><label>当前电量</label><div class="input-unit"><input type="number" id="cSoc" value="20" min="0" max="100"><span class="unit">%</span></div></div>
@@ -351,6 +351,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
 
     <div class="card">
       <div class="card-title">充电设置</div>
+      <div class="form-group budget-highlight" style="margin-bottom:16px"><label>⏰ 预算时间</label><div class="input-unit"><input type="number" id="cBudget" value="8" min="0.5" step="0.5"><span class="unit">h</span></div></div>
       <div class="form-grid">
         <div class="form-group full"><label>充电模式</label>
           <div class="radio-group" id="cModeGroup">
@@ -371,7 +372,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
       </div>
       <div class="form-grid" style="margin-top:12px">
         <div class="form-group"><div class="check-group"><input type="checkbox" id="cTrickleOn"><label for="cTrickleOn">涓流充电</label></div></div>
-        <div class="form-group budget-highlight"><label>⏰ 预算时间</label><div class="input-unit"><input type="number" id="cBudget" value="8" min="0.5" step="0.5"><span class="unit">h</span></div></div>
+        <div class="form-group"></div>
       </div>
       <div class="sub-form" id="cTrickleForm">
         <div class="form-grid form-grid-3">
@@ -416,7 +417,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
     <div class="card">
       <div class="card-title">电池设置</div>
       <div class="form-grid form-grid-4">
-        <div class="form-group"><label>串数 (S)</label><input type="number" id="dS" value="21" min="1" max="200"></div>
+        <div class="form-group"><label>串数 (S)</label><input type="number" id="dS" value="20" min="1" max="200"></div>
         <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="dHV"><label for="dHV">高压 (4.3V)</label></div></div>
         <div class="form-group"><label>容量</label><div class="input-unit"><input type="number" id="dCap" value="50" min="0.1" step="0.1"><span class="unit">Ah</span></div></div>
         <div class="form-group"><label>当前电量</label><div class="input-unit"><input type="number" id="dSoc" value="100" min="0" max="100"><span class="unit">%</span></div></div>
@@ -764,6 +765,10 @@ function buildChargeChart(data, result) {
   const ctx = document.getElementById('cChart').getContext('2d');
   if (cChartInstance) cChartInstance.destroy();
 
+  const vMin = Math.min(...data.voltage);
+  const vMax = Math.max(...data.voltage);
+  const vPad = (vMax - vMin) * 0.15 || 5;
+
   cChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
@@ -826,7 +831,7 @@ function buildChargeChart(data, result) {
           grid: { color: 'rgba(0,0,0,0.04)' }
         },
         yI:  { type: 'linear', position: 'left', title: { display: true, text: '电流 (A)', color: CHART_COLORS.current.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.current.border }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
-        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, beginAtZero: false, offset: true },
+        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, suggestedMin: vMin - vPad, suggestedMax: vMax + vPad, offset: true },
         yP:  { type: 'linear', position: 'right', title: { display: true, text: '功率 (W)', color: CHART_COLORS.power.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.power.border }, grid: { drawOnChartArea: false }, beginAtZero: true },
         ySOC:{ type: 'linear', position: 'right', title: { display: true, text: '电量 (%)', color: CHART_COLORS.soc.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.soc.border }, grid: { drawOnChartArea: false }, min: 0, max: 100, offset: true }
       },
@@ -850,6 +855,10 @@ function buildDischargeChart(data) {
 
   const totalH = data.time[data.time.length - 1] || 1;
   const isLong = totalH > 48;
+
+  const vMin = Math.min(...data.voltage);
+  const vMax = Math.max(...data.voltage);
+  const vPad = (vMax - vMin) * 0.15 || 5;
 
   dChartInstance = new Chart(ctx, {
     type: 'line',
@@ -910,7 +919,7 @@ function buildDischargeChart(data) {
           grid: { color: 'rgba(0,0,0,0.04)' }
         },
         yI:  { type: 'linear', position: 'left', title: { display: true, text: '电流 (A)', color: CHART_COLORS.current.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.current.border }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
-        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, beginAtZero: false, offset: true },
+        yV:  { type: 'linear', position: 'left', title: { display: true, text: '电压 (V)', color: CHART_COLORS.voltage.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.voltage.border }, grid: { drawOnChartArea: false }, suggestedMin: vMin - vPad, suggestedMax: vMax + vPad, offset: true },
         yP:  { type: 'linear', position: 'right', title: { display: true, text: '功率 (W)', color: CHART_COLORS.power.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.power.border }, grid: { drawOnChartArea: false }, beginAtZero: true },
         ySOC:{ type: 'linear', position: 'right', title: { display: true, text: '电量 (%)', color: CHART_COLORS.soc.border, font: { size: 11 } }, ticks: { color: CHART_COLORS.soc.border }, grid: { drawOnChartArea: false }, min: 0, max: 100, offset: true }
       },
