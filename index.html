@@ -262,6 +262,13 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
 .suggest-box .label { font-size: 12px; color: var(--text2); font-weight: 600; }
 .suggest-box .value { font-size: 28px; font-weight: 800; color: var(--primary); margin-top: 2px; }
 .suggest-box .note { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.suggest-box.warn-red {
+  background: linear-gradient(135deg, #fee2e2, #fecaca) !important;
+  border: 1px solid rgba(239,68,68,0.3) !important;
+}
+.suggest-box.warn-red .label { color: #991b1b; }
+.suggest-box.warn-red .value { color: #dc2626; background: none; -webkit-text-fill-color: #dc2626; }
+.suggest-box.warn-red .note { color: #b91c1c; }
 .budget-highlight {
   padding: 14px 16px;
   background: linear-gradient(135deg, #fef9c3, #fef3c7, #fde68a);
@@ -987,21 +994,25 @@ function showChargeResults(result, mode) {
   const totalH = result.totalTime / 3600;
   const finalSOC = result.finalSOC;
 
+  const notFull = result.finalSOC < 99.99;
+  const warnCls = notFull ? ' warn-red' : '';
+  const fullTag = notFull ? ' <span style="color:#dc2626;font-size:14px;font-weight:700">（充不满）</span>' : '';
+
   if (mode === 'cc') {
     const Imax = Math.max(...result.data.current);
     const s = parseFloat(document.getElementById('cS').value);
     document.getElementById('cSuggest').innerHTML = `
-      <div class="suggest-box">
+      <div class="suggest-box${warnCls}">
         <div class="label">建议充电电流</div>
-        <div class="value">${Imax.toFixed(1)} A</div>
+        <div class="value">${Imax.toFixed(1)} A${fullTag}</div>
         <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · ${(Imax / (result.packCapacity / s)).toFixed(2)}C</div>
       </div>`;
   } else {
     const Pmax = Math.max(...result.data.power);
     document.getElementById('cSuggest').innerHTML = `
-      <div class="suggest-box">
+      <div class="suggest-box${warnCls}">
         <div class="label">建议充电功率</div>
-        <div class="value">${Pmax.toFixed(0)} W</div>
+        <div class="value">${Pmax.toFixed(0)} W${fullTag}</div>
         <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · 最大 ${result.packVMax.toFixed(0)}V</div>
       </div>`;
   }
