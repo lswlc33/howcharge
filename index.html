@@ -328,8 +328,8 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
             <label><input type="radio" name="cMode" value="cp"> 恒功率 (CP)</label>
           </div>
         </div>
-        <div class="form-group" id="cCurrentGroup"><label>充电电流</label><div class="input-unit"><input type="number" id="cCurrent" value="15" min="0.1" step="0.1"><span class="unit">A</span></div></div>
-        <div class="form-group" id="cPowerGroup" style="display:none"><label>充电功率</label><div class="input-unit"><input type="number" id="cPower" value="1850" min="100" step="50"><span class="unit">W</span></div></div>
+        <div class="form-group" id="cCurrentGroup"><label>极限充电电流</label><div class="input-unit"><input type="number" id="cCurrent" value="30" min="1" step="0.1"><span class="unit">A</span></div></div>
+        <div class="form-group" id="cPowerGroup" style="display:none"><label>极限充电功率</label><div class="input-unit"><input type="number" id="cPower" value="1850" min="100" step="50"><span class="unit">W</span></div></div>
         <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="cLimitOn"><label for="cLimitOn">桩限流</label></div></div>
       </div>
       <div class="sub-form" id="cLimitForm">
@@ -966,19 +966,20 @@ function showChargeResults(result, mode) {
   const finalSOC = result.finalSOC;
 
   if (mode === 'cc') {
-    const I = parseFloat(document.getElementById('cCurrent').value);
+    const Imax = Math.max(...result.data.current);
+    const s = parseFloat(document.getElementById('cS').value);
     document.getElementById('cSuggest').innerHTML = `
       <div class="suggest-box">
         <div class="label">建议充电电流</div>
-        <div class="value">${I.toFixed(1)} A</div>
-        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · ${(I / (result.packCapacity / parseFloat(document.getElementById('cS').value))).toFixed(2)}C</div>
+        <div class="value">${Imax.toFixed(1)} A</div>
+        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · ${(Imax / (result.packCapacity / s)).toFixed(2)}C</div>
       </div>`;
   } else {
-    const P = parseFloat(document.getElementById('cPower').value);
+    const Pmax = Math.max(...result.data.power);
     document.getElementById('cSuggest').innerHTML = `
       <div class="suggest-box">
         <div class="label">建议充电功率</div>
-        <div class="value">${(P / 1000).toFixed(1)} kW</div>
+        <div class="value">${(Pmax / 1000).toFixed(1)} kW</div>
         <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · 最大 ${result.packVMax.toFixed(0)}V</div>
       </div>`;
   }
