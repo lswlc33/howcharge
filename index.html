@@ -32,6 +32,116 @@
   --top-h: 56px;
   --max-w: 800px;
 }
+
+[data-theme="dark"] {
+  --bg: #0f1117;
+  --card: #1a1d2e;
+  --primary: #6366f1;
+  --primary-light: #1e1b4b;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --border: #2d3348;
+  --success: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --blue: #60a5fa;
+  --green: #34d399;
+  --orange: #fbbf24;
+  --red: #f87171;
+  --purple: #a78bfa;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] header {
+  background: rgba(15,17,23,0.7);
+  border-bottom-color: rgba(45,51,72,0.6);
+}
+
+[data-theme="dark"] .bottom-bar {
+  background: rgba(26,29,46,0.6);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="text"] {
+  background: #0f1117;
+  border-color: #2d3348;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+[data-theme="dark"] .radio-group label {
+  border-color: #2d3348;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .radio-group label:has(input:checked) {
+  border-color: #6366f1;
+  background: #1e1b4b;
+  color: #818cf8;
+}
+
+[data-theme="dark"] .sub-form {
+  background: #0f1117;
+}
+
+[data-theme="dark"] .result-item {
+  background: #0f1117;
+}
+
+[data-theme="dark"] .chart-info {
+  background: #0f1117;
+}
+
+[data-theme="dark"] .tag-blue { background: #1e3a5f; color: #93c5fd; }
+[data-theme="dark"] .tag-green { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .tag-orange { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .tag-red { background: #7f1d1d; color: #fca5a5; }
+
+[data-theme="dark"] .suggest-box {
+  background: linear-gradient(135deg, #1e1b4b, #1a1d2e);
+  border-color: rgba(99,102,241,0.2);
+}
+
+[data-theme="dark"] .suggest-box.warn-red {
+  background: linear-gradient(135deg, #450a0a, #1a0505) !important;
+  border-color: rgba(248,113,113,0.3) !important;
+}
+[data-theme="dark"] .suggest-box.warn-red .label { color: #fca5a5; }
+[data-theme="dark"] .suggest-box.warn-red .value { color: #f87171; -webkit-text-fill-color: #f87171; }
+[data-theme="dark"] .suggest-box.warn-red .note { color: #f87171; }
+
+[data-theme="dark"] .budget-highlight {
+  background: linear-gradient(135deg, #422006, #713f12, #422006);
+  border-color: #b45309;
+}
+[data-theme="dark"] .budget-highlight label:first-child { color: #fcd34d; }
+[data-theme="dark"] .budget-highlight input {
+  background: #1a1d2e !important;
+  border-color: #b45309 !important;
+  color: #fcd34d !important;
+}
+[data-theme="dark"] .budget-highlight .unit { color: #fbbf24 !important; }
+[data-theme="dark"] .preset-btn {
+  background: #1a1d2e;
+  border-color: #b45309;
+  color: #fcd34d;
+}
+[data-theme="dark"] .preset-btn:hover { background: #b45309; color: #fff; }
+
+[data-theme="dark"] .empty-hint { color: #64748b; }
+
+[data-theme="dark"] .btn-about { background: #1e1b4b; color: #818cf8; }
+[data-theme="dark"] .btn-about:hover { background: #312e81; }
+[data-theme="dark"] .btn-sponsor { background: #6366f1; }
+[data-theme="dark"] .btn-sponsor:hover { background: #4f46e5; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -41,6 +151,7 @@ body {
   overflow-x: hidden;
   padding-top: var(--top-h);
   padding-bottom: calc(var(--bar-h) + 32px);
+  transition: background 0.3s, color 0.3s;
 }
 header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -54,7 +165,19 @@ header {
 }
 .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--text); }
 .logo span { font-size: 26px; }
-.header-btns { display: flex; gap: 8px; }
+.theme-btn {
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  background: var(--card);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.theme-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.header-btns { display: flex; gap: 8px; align-items: center; }
 .header-btns a {
   padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
   text-decoration: none; transition: all 0.2s; cursor: pointer;
@@ -72,6 +195,7 @@ main { max-width: var(--max-w); margin: 0 auto; padding: 16px; }
   box-shadow: var(--shadow);
   padding: 24px;
   margin-bottom: 16px;
+  transition: background 0.3s, box-shadow 0.3s;
 }
 .card-title {
   font-size: 17px; font-weight: 700;
@@ -320,6 +444,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
     <span>🤔</span> 咋充
   </div>
   <div class="header-btns">
+    <button class="theme-btn" id="themeBtn" title="切换主题">🔄</button>
     <a class="btn-about" id="btnAbout">关于</a>
     <a class="btn-sponsor" id="btnSponsor">赞助</a>
   </div>
@@ -476,9 +601,59 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
 </nav>
 
 <script>
+// ==================== 主题管理 ====================
+const THEME_ICONS = { light: '☀️', dark: '🌙', auto: '🔄' };
+const THEME_ORDER = ['auto', 'light', 'dark'];
+let themeMode = localStorage.getItem('themeMode') || 'auto';
+let cChartInstance = null;
+let dChartInstance = null;
+
+function getSystemTheme() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(mode) {
+  const effective = mode === 'auto' ? getSystemTheme() : mode;
+  document.documentElement.setAttribute('data-theme', effective);
+  document.getElementById('themeBtn').textContent = THEME_ICONS[mode];
+  updateChartTheme();
+}
+
+function cycleTheme() {
+  const idx = THEME_ORDER.indexOf(themeMode);
+  themeMode = THEME_ORDER[(idx + 1) % THEME_ORDER.length];
+  localStorage.setItem('themeMode', themeMode);
+  applyTheme(themeMode);
+}
+
+applyTheme(themeMode);
+document.getElementById('themeBtn').addEventListener('click', cycleTheme);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (themeMode === 'auto') applyTheme('auto');
+});
+
+function isDark() {
+  return document.documentElement.getAttribute('data-theme') === 'dark';
+}
+
+function updateChartTheme() {
+  const gridColor = isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const tickColor = isDark() ? '#94a3b8' : '#666';
+  const titleColor = isDark() ? '#e2e8f0' : '#333';
+  [cChartInstance, dChartInstance].forEach(c => {
+    if (!c) return;
+    c.options.scales.x.grid.color = gridColor;
+    c.options.scales.x.ticks.color = tickColor;
+    c.options.scales.x.title.color = titleColor;
+    if (c.options.scales.x.title.font) c.options.scales.x.title.font.weight = '600';
+    c.options.plugins.legend.labels.color = titleColor;
+    c.update('none');
+  });
+}
+
 // ==================== 配置（可自定义） ====================
-const SPONSOR_URL = 'javascript:void(0)';
-const ABOUT_URL = 'javascript:void(0)';
+const SPONSOR_URL = 'https://lswlc33.github.io/website-tset/donate';
+const ABOUT_URL = 'https://github.com/lswlc33/howcharge';
 
 // ==================== OCV 曲线 ====================
 const OCV_SOC = [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
@@ -671,7 +846,7 @@ const verticalLinePlugin = {
     ctx.moveTo(chart._vLineX, top);
     ctx.lineTo(chart._vLineX, bottom);
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(79,70,229,0.35)';
+    ctx.strokeStyle = isDark() ? 'rgba(129,140,248,0.35)' : 'rgba(79,70,229,0.35)';
     ctx.setLineDash([6, 4]);
     ctx.stroke();
     ctx.restore();
@@ -710,7 +885,7 @@ const budgetLinePlugin = {
     ctx.strokeStyle = 'rgba(239,68,68,0.7)';
     ctx.setLineDash([8, 4]);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(239,68,68,0.9)';
+    ctx.fillStyle = isDark() ? 'rgba(248,113,113,0.9)' : 'rgba(239,68,68,0.9)';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('预算时间', pixelX, top - 4);
@@ -731,8 +906,13 @@ function formatTimeH(seconds) {
   return (seconds / 3600).toFixed(1);
 }
 
-let cChartInstance = null;
-let dChartInstance = null;
+function getChartThemeOpts() {
+  return {
+    gridColor: isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+    tickColor: isDark() ? '#94a3b8' : '#666',
+    labelColor: isDark() ? '#e2e8f0' : '#333'
+  };
+}
 
 function buildChargeChart(data, result) {
   const ctx = document.getElementById('cChart').getContext('2d');
@@ -787,21 +967,22 @@ function buildChargeChart(data, result) {
       plugins: {
         legend: {
           position: 'top',
-          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 } }
+          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 }, color: getChartThemeOpts().labelColor }
         },
         tooltip: { enabled: false, external: (ctx) => externalTooltip(ctx, 'cChartInfo', 'cChartTime', 'cChartGrid') }
       },
       scales: {
         x: {
-          title: { display: true, text: '时间 (h)', font: { size: 12, weight: '600' } },
+          title: { display: true, text: '时间 (h)', font: { size: 12, weight: '600' }, color: getChartThemeOpts().labelColor },
           ticks: {
             maxTicksLimit: 10,
+            color: getChartThemeOpts().tickColor,
             callback: function(val, idx) {
               const v = parseFloat(this.getLabelForValue(val));
               return v.toFixed(1) + 'h';
             }
           },
-          grid: { color: 'rgba(0,0,0,0.04)' }
+          grid: { color: getChartThemeOpts().gridColor }
         },
         yI:  { display: false, type: 'linear', position: 'left', beginAtZero: true },
         yV:  { display: false, type: 'linear', position: 'left', suggestedMin: vMin - vPad, suggestedMax: vMax + vPad },
@@ -875,22 +1056,23 @@ function buildDischargeChart(data) {
       plugins: {
         legend: {
           position: 'top',
-          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 } }
+          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 }, color: getChartThemeOpts().labelColor }
         },
         tooltip: { enabled: false, external: (ctx) => externalTooltip(ctx, 'dChartInfo', 'dChartTime', 'dChartGrid') }
       },
       scales: {
         x: {
-          title: { display: true, text: isLong ? '时间 (天)' : '时间 (h)', font: { size: 12, weight: '600' } },
+          title: { display: true, text: isLong ? '时间 (天)' : '时间 (h)', font: { size: 12, weight: '600' }, color: getChartThemeOpts().labelColor },
           ticks: {
             maxTicksLimit: 10,
+            color: getChartThemeOpts().tickColor,
             callback: function(val) {
               const h = parseFloat(this.getLabelForValue(val));
               if (isLong) return (h / 24).toFixed(0) + 'd';
               return h.toFixed(0) + 'h';
             }
           },
-          grid: { color: 'rgba(0,0,0,0.04)' }
+          grid: { color: getChartThemeOpts().gridColor }
         },
         yI:  { display: false, type: 'linear', position: 'left', beginAtZero: true },
         yV:  { display: false, type: 'linear', position: 'left', suggestedMin: vMin - vPad, suggestedMax: vMax + vPad },
