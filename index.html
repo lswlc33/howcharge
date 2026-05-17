@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>咋充</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤔</text></svg>">
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css" />
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root {
@@ -137,14 +139,18 @@
 
 [data-theme="dark"] .empty-hint { color: #64748b; }
 
-[data-theme="dark"] .btn-about { background: #1e1b4b; color: #818cf8; }
-[data-theme="dark"] .btn-about:hover { background: #312e81; }
-[data-theme="dark"] .btn-sponsor { background: #6366f1; }
-[data-theme="dark"] .btn-sponsor:hover { background: #4f46e5; }
+  [data-theme="dark"] #btnAbout { background: #1e1b4b; color: #818cf8; }
+  [data-theme="dark"] #btnAbout:hover { background: #312e81; }
+  [data-theme="dark"] #btnSponsor { background: #6366f1; }
+  [data-theme="dark"] #btnSponsor:hover { background: #4f46e5; }
+  [data-theme="dark"] .theme-btn { border-color: #2d3348; }
+  [data-theme="dark"] .header-icon-btn { border-color: #2d3348; }
+  [data-theme="dark"] .check-group input[type="checkbox"] { background: #0f1117; border-color: #2d3348; }
+  [data-theme="dark"] .check-group input[type="checkbox"]:checked { background: var(--primary); border-color: var(--primary); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: "MiSans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -166,26 +172,32 @@ header {
 .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--text); }
 .logo span { font-size: 26px; }
 .theme-btn {
-  width: 36px; height: 36px;
-  border: 1.5px solid var(--border);
-  border-radius: 50%;
-  background: var(--card);
-  cursor: pointer;
-  font-size: 18px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
 .theme-btn:hover { border-color: var(--primary); background: var(--primary-light); }
 .header-btns { display: flex; gap: 8px; align-items: center; }
-.header-btns a {
-  padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
-  text-decoration: none; transition: all 0.2s; cursor: pointer;
-}
-.btn-sponsor { background: var(--primary); color: #fff; }
-.btn-sponsor:hover { background: #4338ca; }
-.btn-about { background: var(--primary-light); color: var(--primary); }
-.btn-about:hover { background: #dbeafe; }
+.header-icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  #btnAbout { background: var(--primary-light); color: var(--primary); border-color: transparent; }
+  #btnAbout:hover { background: #dbeafe; }
+  #btnSponsor { background: var(--primary); color: #fff; border-color: transparent; }
+  #btnSponsor:hover { background: #4338ca; }
 main { max-width: var(--max-w); margin: 0 auto; padding: 16px; }
 .page { display: none; }
 .page.active { display: block; }
@@ -208,6 +220,80 @@ main { max-width: var(--max-w); margin: 0 auto; padding: 16px; }
   border-radius: 2px;
   background: var(--primary);
 }
+.btn-adv {
+  margin-left: auto;
+  width: 30px; height: 30px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.btn-adv:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+[data-theme="dark"] .btn-adv { border-color: #2d3348; }
+[data-theme="dark"] .btn-adv:hover { background: #1e1b4b; }
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  width: 92%;
+  max-width: 640px;
+  max-height: 82vh;
+  overflow-y: auto;
+  transform: translateY(12px);
+  transition: transform 0.25s;
+}
+.modal-overlay.active .modal { transform: translateY(0); }
+.modal-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 16px;
+}
+.modal-head .title { font-size: 17px; font-weight: 700; }
+.modal-close {
+  margin-left: auto;
+  width: 32px; height: 32px; border: none; background: none;
+  font-size: 20px; cursor: pointer; color: var(--text2);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: var(--bg); color: var(--text); }
+.ocv-section { margin-bottom: 18px; }
+.ocv-section .sec-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.ocv-section textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px; font-family: "MiSans", "JetBrains Mono", "SF Mono", "Consolas", monospace;
+  color: var(--text); background: var(--bg);
+  resize: vertical; outline: none;
+  transition: border-color 0.2s;
+}
+.ocv-section textarea:focus { border-color: var(--primary); }
+.modal-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.btn-modal {
+  padding: 8px 20px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.btn-modal-pri { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-modal-pri:hover { opacity: 0.85; }
+.btn-modal-sec { background: var(--card); color: var(--text); }
+.btn-modal-sec:hover { background: var(--bg); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
 .form-grid-4 { grid-template-columns: repeat(4, 1fr); }
 .form-grid-3 { grid-template-columns: repeat(3, 1fr); }
@@ -227,7 +313,15 @@ input[type="number"], input[type="text"] {
   outline: none;
 }
 input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
-input:disabled { opacity: 0.5; cursor: not-allowed; }
+  input:disabled { opacity: 0.5; cursor: not-allowed; }
+  input[type="number"] { -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 34px;
+    cursor: pointer;
+  }
+  [data-theme="dark"] input[type="number"] { color-scheme: dark; }
 .input-unit { position: relative; }
 .input-unit input { padding-right: 40px; }
 .input-unit .unit {
@@ -251,10 +345,26 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .radio-group input[type="radio"] { display: none; }
 .check-group { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
-.check-group input[type="checkbox"] {
-  width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;
-}
-.check-group label { font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; }
+  .check-group input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .check-group input[type="checkbox"]:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .check-group input[type="checkbox"]:hover { border-color: var(--primary); }
+  .check-group input[type="checkbox"]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .check-group label { font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; }
 .sub-form {
   margin-top: 8px; padding: 12px;
   background: var(--bg);
@@ -444,9 +554,15 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
     <span>🤔</span> 咋充
   </div>
   <div class="header-btns">
-    <button class="theme-btn" id="themeBtn" title="切换主题">🔄</button>
-    <a class="btn-about" id="btnAbout">关于</a>
-    <a class="btn-sponsor" id="btnSponsor">赞助</a>
+      <button class="theme-btn" id="themeBtn" title="切换主题">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+        <a class="header-icon-btn" id="btnAbout" title="关于">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </a>
+        <a class="header-icon-btn" id="btnSponsor" title="赞助">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </a>
   </div>
 </header>
 
@@ -455,7 +571,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
   <div id="pageCharge" class="page active">
 
     <div class="card">
-      <div class="card-title">电池设置</div>
+      <div class="card-title"><span class="card-title-text">电池设置</span><button class="btn-adv" id="btnAdvCharge" title="高级设置（OCV曲线）"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
       <div class="form-grid form-grid-4">
         <div class="form-group"><label>串数 (S)</label><input type="number" id="cS" value="20" min="1" max="200"></div>
         <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="cHV"><label for="cHV">高压 (4.3V)</label></div></div>
@@ -511,8 +627,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
     <div class="card" id="cResultCard" style="display:none">
       <div class="card-title">充电预测</div>
       <div id="cSuggest"></div>
-      <div class="section-divider"></div>
-      <div id="cResultMain"></div>
+        <div id="cResultMain"></div>
       <div id="cResultGrid"></div>
     </div>
 
@@ -539,9 +654,7 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
   <div id="pageDischarge" class="page">
 
     <div class="card">
-      <div class="card-title">电池设置</div>
-      <div class="form-grid form-grid-4">
-        <div class="form-group"><label>串数 (S)</label><input type="number" id="dS" value="20" min="1" max="200"></div>
+      <div class="card-title"><span class="card-title-text">电池设置</span><button class="btn-adv" id="dS" value="20" min="1" max="200"></div>
         <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="dHV"><label for="dHV">高压 (4.3V)</label></div></div>
         <div class="form-group"><label>容量</label><div class="input-unit"><input type="number" id="dCap" value="50" min="0.1" step="0.1"><span class="unit">Ah</span></div></div>
         <div class="form-group"><label>当前电量</label><div class="input-unit"><input type="number" id="dSoc" value="100" min="0" max="100"><span class="unit">%</span></div></div>
@@ -589,6 +702,31 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
   </div>
 </main>
 
+<div class="modal-overlay" id="ocvModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="title">⚙ 高级设置 · OCV 曲线</span>
+      <button class="modal-close" onclick="closeOCVEditor()">✕</button>
+    </div>
+    <div class="ocv-section">
+      <div class="sec-title">SOC 采样点 (%)</div>
+      <textarea id="ocvSOC" rows="2" placeholder="用逗号或空格分隔，如: 0, 10, 20, ..., 100"></textarea>
+    </div>
+    <div class="ocv-section">
+      <div class="sec-title">标压 OCV (V/cell) — 每节电芯开路电压</div>
+      <textarea id="ocvNorm" rows="2" placeholder="与 SOC 一一对应，如: 2.50, 3.30, ..., 4.20"></textarea>
+    </div>
+    <div class="ocv-section">
+      <div class="sec-title">高压 OCV (V/cell) — 勾选「高压」后使用</div>
+      <textarea id="ocvHV" rows="2" placeholder="与 SOC 一一对应，如: 2.50, 3.30, ..., 4.30"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal btn-modal-sec" onclick="resetOCV()">恢复默认</button>
+      <button class="btn-modal btn-modal-pri" onclick="saveOCV()">保存并关闭</button>
+    </div>
+  </div>
+</div>
+
 <nav class="bottom-bar">
   <button class="tab-btn active" data-page="pageCharge">
     <span class="icon">⚡</span>
@@ -602,7 +740,11 @@ input:disabled { opacity: 0.5; cursor: not-allowed; }
 
 <script>
 // ==================== 主题管理 ====================
-const THEME_ICONS = { light: '☀️', dark: '🌙', auto: '🔄' };
+const THEME_ICONS = {
+    light: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>',
+    dark:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    auto:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>'
+  };
 const THEME_ORDER = ['auto', 'light', 'dark'];
 let themeMode = localStorage.getItem('themeMode') || 'auto';
 let cChartInstance = null;
@@ -615,7 +757,7 @@ function getSystemTheme() {
 function applyTheme(mode) {
   const effective = mode === 'auto' ? getSystemTheme() : mode;
   document.documentElement.setAttribute('data-theme', effective);
-  document.getElementById('themeBtn').textContent = THEME_ICONS[mode];
+  document.getElementById('themeBtn').innerHTML = THEME_ICONS[mode];
   updateChartTheme();
 }
 
@@ -656,9 +798,12 @@ const SPONSOR_URL = 'https://lswlc33.github.io/website-tset/donate';
 const ABOUT_URL = 'https://github.com/lswlc33/howcharge';
 
 // ==================== OCV 曲线 ====================
-const OCV_SOC = [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
-const OCV_NORM = [2.50, 2.80, 3.10, 3.30, 3.45, 3.55, 3.60, 3.63, 3.65, 3.67, 3.70, 3.73, 3.77, 3.82, 3.87, 3.92, 3.98, 4.04, 4.10, 4.15, 4.18, 4.20];
-const OCV_HV   = [2.50, 2.80, 3.10, 3.30, 3.45, 3.55, 3.62, 3.67, 3.72, 3.77, 3.82, 3.87, 3.92, 3.97, 4.02, 4.07, 4.12, 4.17, 4.22, 4.27, 4.29, 4.30];
+const OCV_SOC_DEFAULT = [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
+const OCV_NORM_DEFAULT = [2.50, 2.80, 3.10, 3.30, 3.45, 3.55, 3.60, 3.63, 3.65, 3.67, 3.70, 3.73, 3.77, 3.82, 3.87, 3.92, 3.98, 4.04, 4.10, 4.15, 4.18, 4.20];
+const OCV_HV_DEFAULT   = [2.50, 2.80, 3.10, 3.30, 3.45, 3.55, 3.62, 3.67, 3.72, 3.77, 3.82, 3.87, 3.92, 3.97, 4.02, 4.07, 4.12, 4.17, 4.22, 4.27, 4.29, 4.30];
+let OCV_SOC = [...OCV_SOC_DEFAULT];
+let OCV_NORM = [...OCV_NORM_DEFAULT];
+let OCV_HV   = [...OCV_HV_DEFAULT];
 
 function lerp(table_x, table_y, x) {
   if (x <= table_x[0]) return table_y[0];
@@ -1149,10 +1294,30 @@ function showChargeResults(result, mode) {
 
   const totalH = result.totalTime / 3600;
   const finalSOC = result.finalSOC;
+  const budgetH = result.budgetTime / 3600;
 
   const notFull = result.totalTime > result.budgetTime;
+
+  // 充不满时取预算时间点的数据
+  let budgetData = null;
+  if (notFull) {
+    const idx = result.data.time.findIndex(t => t >= budgetH);
+    if (idx >= 0) {
+      budgetData = {
+        soc: result.data.soc[idx],
+        current: result.data.current[idx],
+        voltage: result.data.voltage[idx],
+        power: result.data.power[idx],
+        time: result.data.time[idx]
+      };
+    }
+  }
+
   const warnCls = notFull ? ' warn-red' : '';
   const fullTag = notFull ? ' <span style="color:#dc2626;font-size:14px;font-weight:700">（时间不够）</span>' : '';
+  const displaySOC = budgetData ? budgetData.soc : finalSOC;
+  const displayTimeH = budgetData ? budgetH : totalH;
+  const displayTimeSec = budgetData ? result.budgetTime : result.totalTime;
 
   if (mode === 'cc') {
     const Imax = result._optimizedValue != null ? result._optimizedValue : Math.max(...result.data.current);
@@ -1161,7 +1326,7 @@ function showChargeResults(result, mode) {
       <div class="suggest-box${warnCls}">
         <div class="label">建议充电电流</div>
         <div class="value">${Imax.toFixed(1)} A${fullTag}</div>
-        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · ${(Imax / (result.packCapacity / s)).toFixed(2)}C${result._optimizedValue != null ? ' · 已自动优化至预算时间内最低' : ''}</div>
+        <div class="note">充电倍率：${(Imax / (result.packCapacity / s)).toFixed(2)}C${result._optimizedValue != null ? ' · 已优化至预算时间内最低' : ''}</div>
       </div>`;
   } else {
     const Pmax = result._optimizedValue != null ? result._optimizedValue : Math.max(...result.data.power);
@@ -1169,22 +1334,23 @@ function showChargeResults(result, mode) {
       <div class="suggest-box${warnCls}">
         <div class="label">建议充电功率</div>
         <div class="value">${Pmax.toFixed(0)} W${fullTag}</div>
-        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · 最大 ${result.packVMax.toFixed(0)}V${result._optimizedValue != null ? ' · 已自动优化至预算时间内最低' : ''}</div>
+        <div class="note">电池组 ${(result.packEnergy / 1000).toFixed(1)}kWh · 最大 ${result.packVMax.toFixed(0)}V${result._optimizedValue != null ? ' · 已优化至预算时间内最低' : ''}</div>
       </div>`;
   }
 
+  const showH = displayTimeH >= 1;
   document.getElementById('cResultMain').innerHTML = `
     <div class="result-main">
-      <div class="result-value">${totalH >= 1 ? totalH.toFixed(1) : (totalH * 60).toFixed(0)}</div>
-      <div class="result-unit">${totalH >= 1 ? '小时' : '分钟'}</div>
+      <div class="result-value">${showH ? displayTimeH.toFixed(1) : (displayTimeH * 60).toFixed(0)}</div>
+      <div class="result-unit">${showH ? '小时' : '分钟'}</div>
     </div>
-    <div class="result-sub">${formatTime(result.totalTime)} · ${finalSOC.toFixed(1)}%</div>`;
+    <div class="result-sub">${formatTime(displayTimeSec)} · ${displaySOC.toFixed(1)}%${notFull ? ' <span style="color:#dc2626">（未充满）</span>' : ''}</div>`;
 
   const phaseNames = { cc: '恒流 CC', cp: '恒功率 CP', trickle: '涓流' };
   let phaseHTML = '<div class="result-grid">';
   phaseHTML += `
-    <div class="result-item"><div class="label">预计充满时间</div><div class="value">${formatTimeH(result.totalTime)} h</div></div>
-    <div class="result-item"><div class="label">最终电量</div><div class="value">${finalSOC.toFixed(1)}%</div></div>
+    <div class="result-item"><div class="label">${notFull ? '预算时间' : '预计充满时间'}</div><div class="value">${formatTimeH(displayTimeSec)} h</div></div>
+    <div class="result-item"><div class="label">${notFull ? '预算点电量' : '最终电量'}</div><div class="value">${displaySOC.toFixed(1)}%</div></div>
     <div class="result-item"><div class="label">电池组容量</div><div class="value">${(result.packEnergy / 1000).toFixed(1)} kWh</div><div class="sub">${result.packVMin.toFixed(0)}V ~ ${result.packVMax.toFixed(0)}V</div></div>
     <div class="result-item"><div class="label">充电阶段</div><div class="value">${result.phases.length} 段</div></div>`;
   phaseHTML += '</div>';
@@ -1193,11 +1359,17 @@ function showChargeResults(result, mode) {
     phaseHTML += '<div style="margin-top:12px"><table style="width:100%;font-size:13px;border-collapse:collapse">';
     phaseHTML += '<tr style="color:var(--text3);text-align:left"><th style="padding:6px 8px">阶段</th><th>时长</th><th>SOC区间</th></tr>';
     result.phases.forEach(p => {
-      const dur = (p.endTime - p.startTime) / 60;
+      let endTime = p.endTime;
+      let endSOC = p.endSOC;
+      if (notFull && p.endSOC > displaySOC) {
+        endTime = result.budgetTime;
+        endSOC = displaySOC;
+      }
+      const dur = Math.max(0, (endTime - p.startTime) / 60);
       phaseHTML += `<tr style="border-top:1px solid var(--border)">
         <td style="padding:8px"><span class="tag tag-blue">${phaseNames[p.name] || p.name}</span></td>
         <td>${dur.toFixed(0)}分钟</td>
-        <td>${p.startSOC.toFixed(1)}% → ${p.endSOC.toFixed(1)}%</td>
+        <td>${p.startSOC.toFixed(1)}% → ${endSOC.toFixed(1)}%</td>
       </tr>`;
     });
     phaseHTML += '</table></div>';
@@ -1399,6 +1571,42 @@ syncModeUI();
 syncLimitUI();
 syncTrickleUI();
 syncDischargeModeUI();
+
+// ==================== OCV 高级设置 ====================
+function openOCVEditor() {
+  document.getElementById('ocvSOC').value = OCV_SOC.join(', ');
+  document.getElementById('ocvNorm').value = OCV_NORM.join(', ');
+  document.getElementById('ocvHV').value = OCV_HV.join(', ');
+  document.getElementById('ocvModal').classList.add('active');
+}
+function closeOCVEditor() {
+  document.getElementById('ocvModal').classList.remove('active');
+}
+function parseOCV(text) {
+  return text.split(/[,\s]+/).map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+}
+function saveOCV() {
+  const soc = parseOCV(document.getElementById('ocvSOC').value);
+  const norm = parseOCV(document.getElementById('ocvNorm').value);
+  const hv = parseOCV(document.getElementById('ocvHV').value);
+  if (soc.length < 2) return alert('SOC 采样点至少需要 2 个值');
+  if (norm.length !== soc.length) return alert('标压 OCV 数量 (' + norm.length + ') 与 SOC (' + soc.length + ') 不匹配');
+  if (hv.length !== soc.length) return alert('高压 OCV 数量 (' + hv.length + ') 与 SOC (' + soc.length + ') 不匹配');
+  for (let i = 1; i < soc.length; i++) { if (soc[i] <= soc[i - 1]) return alert('SOC 采样点必须严格递增'); }
+  OCV_SOC = soc;
+  OCV_NORM = norm;
+  OCV_HV = hv;
+  closeOCVEditor();
+}
+function resetOCV() {
+  document.getElementById('ocvSOC').value = OCV_SOC_DEFAULT.join(', ');
+  document.getElementById('ocvNorm').value = OCV_NORM_DEFAULT.join(', ');
+  document.getElementById('ocvHV').value = OCV_HV_DEFAULT.join(', ');
+}
+document.getElementById('ocvModal').addEventListener('click', function(e) {
+  if (e.target === this) closeOCVEditor();
+});
+document.getElementById('btnAdvCharge').addEventListener('click', openOCVEditor);
 </script>
 </body>
 </html>
