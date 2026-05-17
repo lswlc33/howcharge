@@ -123,7 +123,6 @@
   background: linear-gradient(135deg, #422006, #713f12, #422006);
   border-color: #b45309;
 }
-[data-theme="dark"] .budget-highlight label:first-child { color: #fcd34d; }
 [data-theme="dark"] .budget-highlight input {
   background: #1a1d2e !important;
   border-color: #b45309 !important;
@@ -143,12 +142,22 @@
   [data-theme="dark"] #btnAbout:hover { background: #312e81; }
   [data-theme="dark"] #btnSponsor { background: #6366f1; }
   [data-theme="dark"] #btnSponsor:hover { background: #4f46e5; }
+  [data-theme="dark"] #btnAnnounce { background: #422006; color: #fbbf24; }
+  [data-theme="dark"] #btnAnnounce:hover { background: #5c2d0a; }
   [data-theme="dark"] .theme-btn { border-color: #2d3348; }
   [data-theme="dark"] .header-icon-btn { border-color: #2d3348; }
   [data-theme="dark"] .check-group input[type="checkbox"] { background: #0f1117; border-color: #2d3348; }
   [data-theme="dark"] .check-group input[type="checkbox"]:checked { background: var(--primary); border-color: var(--primary); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(127,127,127,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(127,127,127,0.45); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(200,200,200,0.18); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: rgba(200,200,200,0.35); }
+html { scrollbar-width: thin; scrollbar-color: rgba(127,127,127,0.25) transparent; }
+[data-theme="dark"] html { scrollbar-color: rgba(200,200,200,0.18) transparent; }
 body {
   font-family: "MiSans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
   background: var(--bg);
@@ -198,6 +207,8 @@ header {
   #btnAbout:hover { background: #dbeafe; }
   #btnSponsor { background: var(--primary); color: #fff; border-color: transparent; }
   #btnSponsor:hover { background: #4338ca; }
+  #btnAnnounce { background: #fef3c7; color: #b45309; border-color: transparent; }
+  #btnAnnounce:hover { background: #fde68a; }
 main { max-width: var(--max-w); margin: 0 auto; padding: 16px; }
 .page { display: none; }
 .page.active { display: block; }
@@ -235,6 +246,36 @@ main { max-width: var(--max-w); margin: 0 auto; padding: 16px; }
 .btn-adv:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 [data-theme="dark"] .btn-adv { border-color: #2d3348; }
 [data-theme="dark"] .btn-adv:hover { background: #1e1b4b; }
+.btn-toggle {
+  width: 30px; height: 30px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  order: 10;
+}
+.btn-toggle:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+[data-theme="dark"] .btn-toggle { border-color: #2d3348; }
+[data-theme="dark"] .btn-toggle:hover { background: #1e1b4b; }
+.card-body { transition: all 0.3s; }
+.card.collapsed .card-body { display: none; }
+.card.collapsed .btn-toggle svg { transform: rotate(180deg); }
+.btn-toggle svg { transition: transform 0.25s; }
+.card.collapsed .card-title { margin-bottom: 0; }
+.budget-highlight .card-title::before { background: #f59e0b; }
+.budget-highlight .card-title { color: #92400e; margin-bottom: 12px; }
+[data-theme="dark"] .budget-highlight .card-title { color: #fcd34d; }
+[data-theme="dark"] .budget-highlight .card-title::before { background: #fbbf24; }
+.announce-content { font-size: 14px; line-height: 1.8; color: var(--text); }
+.announce-content h4 { margin: 14px 0 6px; font-size: 15px; color: var(--primary); }
+.announce-content h4:first-child { margin-top: 0; }
+.announce-content ul { padding-left: 18px; margin: 6px 0; }
+.announce-content li { margin-bottom: 4px; }
+.announce-content .highlight { background: var(--primary-light); padding: 2px 6px; border-radius: 4px; font-weight: 600; color: var(--primary); }
 .modal-overlay {
   position: fixed; inset: 0; z-index: 1000;
   background: rgba(0,0,0,0.35);
@@ -505,14 +546,12 @@ input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229
 .suggest-box.warn-red .value { color: #dc2626; background: none; -webkit-text-fill-color: #dc2626; }
 .suggest-box.warn-red .note { color: #b91c1c; }
 .budget-highlight {
-  padding: 14px 16px;
   background: linear-gradient(135deg, #fef9c3, #fef3c7, #fde68a);
   border: 2px solid #f59e0b;
   border-radius: var(--radius-lg);
   margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(245,158,11,0.12);
 }
-.budget-highlight label:first-child { color: #92400e; font-weight: 700; font-size: 13px; }
 .budget-highlight input {
   background: #fff !important;
   border-color: #f59e0b !important;
@@ -557,6 +596,9 @@ input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229
       <button class="theme-btn" id="themeBtn" title="切换主题">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>
+        <a class="header-icon-btn" id="btnAnnounce" title="使用说明">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </a>
         <a class="header-icon-btn" id="btnAbout" title="关于">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         </a>
@@ -571,28 +613,39 @@ input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229
   <div id="pageCharge" class="page active">
 
     <div class="card">
-      <div class="card-title"><span class="card-title-text">电池设置</span><button class="btn-adv" id="btnAdvCharge" title="高级设置（OCV曲线）"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
-      <div class="form-grid form-grid-4">
+      <div class="card-title"><span class="card-title-text">电池设置</span><button class="btn-adv" id="btnAdvCharge" title="高级设置（OCV曲线）"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><button class="btn-toggle" onclick="toggleCard(this)" title="折叠"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button></div>
+      <div class="card-body">
+        <div class="form-grid form-grid-4">
         <div class="form-group"><label>串数 (S)</label><input type="number" id="cS" value="20" min="1" max="200"></div>
         <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="cHV"><label for="cHV">高压 (4.3V)</label></div></div>
         <div class="form-group"><label>容量</label><div class="input-unit"><input type="number" id="cCap" value="50" min="0.1" step="0.1"><span class="unit">Ah</span></div></div>
         <div class="form-group"><label>当前电量</label><div class="input-unit"><input type="number" id="cSoc" value="20" min="0" max="100"><span class="unit">%</span></div></div>
+        </div>
       </div>
     </div>
 
-    <div class="form-group budget-highlight" style="margin-bottom:16px"><label>⏰ 预算时间</label><div class="input-unit"><input type="number" id="cBudget" value="8" min="0.5" step="0.5"><span class="unit">h</span></div>
-      <div class="budget-presets">
-      <button type="button" class="preset-btn" onclick="setBudget(1)">1h</button>
-      <button type="button" class="preset-btn" onclick="setBudget(2)">2h</button>
-      <button type="button" class="preset-btn" onclick="setBudget(4)">4h</button>
-      <button type="button" class="preset-btn" onclick="setBudget(8)">8h</button>
+    <div class="card budget-highlight">
+      <div class="card-title">预算时间</div>
+      <div class="card-body">
+        <div class="form-grid form-grid-3">
+          <div class="form-group"><label>⏰ 预算时间</label><div class="input-unit"><input type="number" id="cBudget" value="8" min="0.5" step="0.5"><span class="unit">h</span></div></div>
+          <div class="form-group" style="grid-column:span 2"><label style="visibility:hidden">.</label>
+            <div class="budget-presets">
+              <button type="button" class="preset-btn" onclick="setBudget(1)">1h</button>
+              <button type="button" class="preset-btn" onclick="setBudget(2)">2h</button>
+              <button type="button" class="preset-btn" onclick="setBudget(4)">4h</button>
+              <button type="button" class="preset-btn" onclick="setBudget(8)">8h</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
 
     <div class="card">
-      <div class="card-title">充电设置</div>
-      <div class="form-grid">
+      <div class="card-title"><span class="card-title-text">充电设置</span><button class="btn-toggle" onclick="toggleCard(this)" title="折叠"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button></div>
+      <div class="card-body">
+        <div class="form-grid">
         <div class="form-group full"><label>充电模式</label>
           <div class="radio-group" id="cModeGroup">
             <label><input type="radio" name="cMode" value="cc" checked> 恒流 (CC)</label>
@@ -620,6 +673,7 @@ input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229
           <div class="form-group" id="cTrickleCurrentGroup"><label>涓流电流</label><div class="input-unit"><input type="number" id="cTrickleI" value="2" min="0.1" step="0.1"><span class="unit">A</span></div></div>
           <div class="form-group" id="cTricklePowerGroup" style="display:none"><label>涓流功率</label><div class="input-unit"><input type="number" id="cTrickleP" value="500" min="10" step="10"><span class="unit">W</span></div></div>
         </div>
+      </div>
       </div>
     </div>
     <button class="btn-generate" onclick="runCharge()">生成充电曲线</button>
@@ -654,16 +708,21 @@ input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229
   <div id="pageDischarge" class="page">
 
     <div class="card">
-      <div class="card-title"><span class="card-title-text">电池设置</span><button class="btn-adv" id="dS" value="20" min="1" max="200"></div>
+      <div class="card-title"><span class="card-title-text">电池设置</span><button class="btn-adv" id="btnAdvDischarge" title="高级设置（OCV曲线）"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><button class="btn-toggle" onclick="toggleCard(this)" title="折叠"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button></div>
+      <div class="card-body">
+        <div class="form-grid form-grid-4">
+        <div class="form-group"><label>串数 (S)</label><input type="number" id="dS" value="20" min="1" max="200"></div>
         <div class="form-group"><label>&nbsp;</label><div class="check-group"><input type="checkbox" id="dHV"><label for="dHV">高压 (4.3V)</label></div></div>
         <div class="form-group"><label>容量</label><div class="input-unit"><input type="number" id="dCap" value="50" min="0.1" step="0.1"><span class="unit">Ah</span></div></div>
         <div class="form-group"><label>当前电量</label><div class="input-unit"><input type="number" id="dSoc" value="100" min="0" max="100"><span class="unit">%</span></div></div>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">放电设置</div>
-      <div class="form-grid">
+      <div class="card-title"><span class="card-title-text">放电设置</span><button class="btn-toggle" onclick="toggleCard(this)" title="折叠"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button></div>
+      <div class="card-body">
+        <div class="form-grid">
         <div class="form-group full"><label>功耗模式</label>
           <div class="radio-group" id="dModeGroup">
             <label><input type="radio" name="dMode" value="power" checked> 待机功耗</label>
@@ -672,6 +731,7 @@ input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229
         </div>
         <div class="form-group" id="dPowerGroup"><label>待机功耗</label><div class="input-unit"><input type="number" id="dPower" value="50" min="0.1" step="1"><span class="unit">W</span></div></div>
         <div class="form-group" id="dCurrentGroup" style="display:none"><label>待机电流</label><div class="input-unit"><input type="number" id="dCurrent" value="1" min="0.01" step="0.01"><span class="unit">A</span></div></div>
+      </div>
       </div>
     </div>
     <button class="btn-generate" onclick="runDischarge()">生成放电曲线</button>
@@ -723,6 +783,53 @@ input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229
     <div class="modal-foot">
       <button class="btn-modal btn-modal-sec" onclick="resetOCV()">恢复默认</button>
       <button class="btn-modal btn-modal-pri" onclick="saveOCV()">保存并关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="announceModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="title">📢 使用说明</span>
+      <button class="modal-close" onclick="closeAnnounce()">✕</button>
+    </div>
+    <div class="announce-content">
+      <h4>这是什么？</h4>
+      <p><span class="highlight">咋充 (howcharge)</span> 是一款电池充放电曲线预测工具。通过输入电池组参数和充电器设置，模拟充电/放电全过程中的电流、电压、功率、电量变化，并以可视化图表展示。</p>
+      <h4>适用场景</h4>
+      <ul>
+        <li>使用 <strong>可调充电器</strong>（如本富、华为大炮、英可瑞等）给锂电池组充电时，提前预测充电时长和曲线</li>
+        <li>评估不同充电参数（电流/功率/涓流）对充电时间的影响</li>
+        <li>估算电池组在待机状态下的续航时间</li>
+        <li>为充电器参数设置提供参考依据</li>
+      </ul>
+      <h4>充电模拟</h4>
+      <ul>
+        <li>设置电池串数、容量、当前电量、是否高压电池</li>
+        <li>选择 <strong>恒流 (CC)</strong> 或 <strong>恒功率 (CP)</strong> 充电模式</li>
+        <li>可开启桩限流/限功率模拟充电桩限制</li>
+        <li>可开启涓流充电模拟末期降流阶段</li>
+        <li>设定 <strong>预算时间</strong>，工具自动计算所需电流/功率；若极限值不够填满，会标红提示</li>
+      </ul>
+      <h4>放电模拟</h4>
+      <ul>
+        <li>按待机功耗或待机电流估算电池组续航</li>
+        <li>基于 OCV-SOC 开路电压曲线模拟电压逐步下降过程</li>
+      </ul>
+      <h4>高级设置</h4>
+      <ul>
+        <li>点击电池设置标题右侧的 <strong>齿轮图标</strong> 可自定义 OCV 曲线</li>
+        <li>支持修改 SOC 采样点和对应的标压/高压开路电压值</li>
+      </ul>
+      <h4>注意事项</h4>
+      <ul>
+        <li>模拟结果仅供参考，实际充电受温度、内阻、线损、充电器精度等因素影响</li>
+        <li>OCV 曲线默认为典型三元锂电池数据，不同电芯可能存在差异</li>
+        <li>建议在实际使用中结合实测数据进行校准</li>
+      </ul>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal btn-modal-pri" onclick="closeAnnounce()">知道了</button>
     </div>
   </div>
 </div>
@@ -1607,6 +1714,26 @@ document.getElementById('ocvModal').addEventListener('click', function(e) {
   if (e.target === this) closeOCVEditor();
 });
 document.getElementById('btnAdvCharge').addEventListener('click', openOCVEditor);
+document.getElementById('btnAdvDischarge').addEventListener('click', openOCVEditor);
+
+// ==================== 折叠 / 展开 ====================
+function toggleCard(btn) {
+  const card = btn.closest('.card');
+  if (!card) return;
+  card.classList.toggle('collapsed');
+}
+
+// ==================== 公告弹窗 ====================
+function openAnnounce() {
+  document.getElementById('announceModal').classList.add('active');
+}
+function closeAnnounce() {
+  document.getElementById('announceModal').classList.remove('active');
+}
+document.getElementById('announceModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAnnounce();
+});
+document.getElementById('btnAnnounce').addEventListener('click', openAnnounce);
 </script>
 </body>
 </html>
