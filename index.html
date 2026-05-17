@@ -644,6 +644,16 @@ function simulateCharge(params) {
   phases[phases.length - 1].endSOC = soc;
   phases[phases.length - 1].endTime = t;
 
+  if (soc >= 99.99) {
+    soc = 100;
+    const vPack = s * vMaxCell;
+    data.current.push(0);
+    data.voltage.push(+vPack.toFixed(1));
+    data.power.push(0);
+    data.time.push(+(t / 3600).toFixed(4));
+    data.soc.push(100);
+  }
+
   return {
     data,
     phases,
@@ -1147,6 +1157,10 @@ function runCharge() {
   document.getElementById('cEmpty').style.display = 'none';
   document.getElementById('cChartCard').style.display = '';
 
+  console.log('[充电] 参数:', params);
+  console.log('[充电] 结果:', { totalTime: result.totalTime, finalSOC: result.finalSOC, packEnergy: result.packEnergy, optimizedValue: result._optimizedValue });
+  console.table(result.data.time.map((t, i) => ({ '时间(h)': t, '电流(A)': result.data.current[i], '电压(V)': result.data.voltage[i], '功率(W)': result.data.power[i], '电量(%)': result.data.soc[i] })));
+
   showChargeResults(result, mode);
   buildChargeChart(result.data, result);
 }
@@ -1168,6 +1182,10 @@ function runDischarge() {
 
   document.getElementById('dEmpty').style.display = 'none';
   document.getElementById('dChartCard').style.display = '';
+
+  console.log('[放电] 参数:', params);
+  console.log('[放电] 结果:', { totalTime: result.totalTime, standbyDays: result.standbyDays, standbyHours: result.standbyHours, packEnergy: result.packEnergy });
+  console.table(result.data.time.map((t, i) => ({ '时间(h)': t, '电流(A)': result.data.current[i], '电压(V)': result.data.voltage[i], '功率(W)': result.data.power[i], '电量(%)': result.data.soc[i] })));
 
   showDischargeResults(result);
   buildDischargeChart(result.data);
