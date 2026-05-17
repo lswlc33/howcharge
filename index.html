@@ -504,9 +504,8 @@ function getCellOCV(soc, isHV) {
 function getCellVMax(isHV) { return isHV ? 4.30 : 4.20; }
 function getCellVMin() { return 2.50; }
 
-function getPackVoltage(s, isHV, soc, current, rInt) {
-  const ocv = getCellOCV(soc, isHV);
-  return s * (ocv + current * rInt);
+function getPackVoltage(s, isHV, soc) {
+  return s * getCellOCV(soc, isHV);
 }
 
 // ==================== 充电模拟 ====================
@@ -516,26 +515,15 @@ function simulateCharge(params) {
           trickleOn, trickleV, trickleI, trickleP, budgetH } = params;
 
   const vMaxCell = getCellVMax(isHV);
-  const vMinCell = getCellVMin();
-  const rInt = 0.030;
-  const dt = 30;
+  const dt = 60;
   const maxT = budgetH * 3600;
-  const cutoffI = capacity * 0.05;
 
   const data = { time: [], current: [], voltage: [], power: [], soc: [] };
   const phases = [];
   let soc = socStart;
   let t = 0;
-  let phase = 'idle';
 
-  function determinePhase() {
-    const cellV = getCellOCV(soc, isHV);
-    if (trickleOn && cellV < trickleV) return 'trickle';
-    if (cellV >= vMaxCell - 0.001) return 'cv';
-    return mode === 'cc' ? 'cc' : 'cp';
-  }
-  phase = determinePhase();
-  let phaseStartTime = 0;
+  let phase = mode === 'cc' ? 'cc' : 'cp';
   phases.push({ name: phase, startSOC: soc, startTime: 0 });
 
   function record() {
@@ -543,81 +531,38 @@ function simulateCharge(params) {
     data.soc.push(+soc.toFixed(2));
   }
 
-  while (soc < 99.99 && t < maxT) {
+  while (soc < 99.99) {
     const cellOCV = getCellOCV(soc, isHV);
     let I = 0;
 
-    if (phase === 'trickle') {
-      if (mode === 'cc') {
-        I = trickleI;
-      } else {
-        const vPack = s * cellOCV;
-        I = (trickleP / vPack) || 0;
-      }
-      const cellV = cellOCV + I * rInt;
-      if (cellV >= trickleV) {
-        phases[phases.length - 1].endSOC = soc;
-        phases[phases.length - 1].endTime = t;
-        phase = (mode === 'cc') ? 'cc' : 'cp';
-        if (cellOCV >= vMaxCell - 0.001) phase = 'cv';
-        phases.push({ name: phase, startSOC: soc, startTime: t });
-        phaseStartTime = t;
-        continue;
-      }
-    } else if (phase === 'cc') {
+    if (phase === 'cc') {
       I = currentSet;
       if (limitOn) {
         if (limitType === 'current') I = Math.min(I, limitCurrent);
-        else {
-          const vEst = s * (cellOCV + I * rInt);
-          if (limitPower > 0) I = Math.min(I, limitPower / vEst);
-        }
+        else if (limitPower > 0) I = Math.min(I, limitPower / (s * cellOCV));
       }
-      const cellV = cellOCV + I * rInt;
-      if (cellV >= vMaxCell) {
+      if (trickleOn && cellOCV >= trickleV) {
         phases[phases.length - 1].endSOC = soc;
         phases[phases.length - 1].endTime = t;
-        phase = 'cv';
-        phases.push({ name: 'cv', startSOC: soc, startTime: t });
-        phaseStartTime = t;
-        continue;
+        phase = 'trickle';
+        phases.push({ name: phase, startSOC: soc, startTime: t });
       }
     } else if (phase === 'cp') {
-      const ocvPack = s * cellOCV;
-      const a = s * rInt;
-      const b = ocvPack;
       let P = powerSet;
       if (limitOn && limitType === 'power') P = Math.min(P, limitPower);
-      const disc = b * b + 4 * a * P;
-      I = disc >= 0 ? (-b + Math.sqrt(disc)) / (2 * a) : 0;
-      I = Math.max(I, 0);
-      const cellV = cellOCV + I * rInt;
-      if (cellV >= vMaxCell) {
+      I = (s * cellOCV) > 0 ? P / (s * cellOCV) : 0;
+      if (trickleOn && cellOCV >= trickleV) {
         phases[phases.length - 1].endSOC = soc;
         phases[phases.length - 1].endTime = t;
-        phase = 'cv';
-        phases.push({ name: 'cv', startSOC: soc, startTime: t });
-        phaseStartTime = t;
-        continue;
+        phase = 'trickle';
+        phases.push({ name: phase, startSOC: soc, startTime: t });
       }
-    } else if (phase === 'cv') {
-      const vCell = vMaxCell;
-      I = (vCell - cellOCV) / rInt;
-      if (I < 0) I = 0;
-      if (I < cutoffI) {
-        soc = 100;
-        const vPack = s * vCell;
-        data.current.push(+(I).toFixed(2));
-        data.voltage.push(+(vPack).toFixed(1));
-        data.power.push(+(vPack * I).toFixed(1));
-        record();
-        break;
-      }
+    } else if (phase === 'trickle') {
+      I = trickleI;
     }
 
     I = Math.max(I, 0);
-    const vCell = cellOCV + I * rInt;
-    const vPack = s * vCell;
+    const vPack = s * cellOCV;
     const P = vPack * I;
 
     data.current.push(+(I).toFixed(2));
@@ -625,20 +570,8 @@ function simulateCharge(params) {
     data.power.push(+(P).toFixed(1));
     record();
 
-    const dSOC = (I * dt) / (capacity * 3600) * 100;
-    soc = Math.min(soc + dSOC, 100);
+    soc = Math.min(soc + (I * dt) / (capacity * 3600) * 100, 100);
     t += dt;
-
-    if (phase !== 'trickle' && phase !== 'cv') {
-      const cellVCheck = getCellOCV(soc, isHV) + I * rInt;
-      if (cellVCheck >= vMaxCell && phase !== 'cv') {
-        phases[phases.length - 1].endSOC = soc;
-        phases[phases.length - 1].endTime = t;
-        phase = 'cv';
-        phases.push({ name: 'cv', startSOC: soc, startTime: t });
-        phaseStartTime = t;
-      }
-    }
   }
 
   phases[phases.length - 1].endSOC = soc;
@@ -659,6 +592,7 @@ function simulateCharge(params) {
     phases,
     totalTime: t,
     finalSOC: soc,
+    budgetTime: maxT,
     packCapacity: s * capacity,
     packEnergy: s * (isHV ? 3.8 : 3.7) * capacity,
     packVMax: s * vMaxCell,
@@ -670,7 +604,6 @@ function simulateCharge(params) {
 function simulateDischarge(params) {
   const { s, isHV, capacity, socStart, mode, powerSet, currentSet } = params;
 
-  const rInt = 0.030;
   const packEnergy = s * (isHV ? 3.8 : 3.7) * capacity;
   const packCapacity = s * capacity;
 
@@ -691,21 +624,14 @@ function simulateDischarge(params) {
     const progress = totalSeconds > 0 ? t / totalSeconds : 1;
     const soc = Math.max(socStart * (1 - progress), 0);
     const cellOCV = getCellOCV(soc, isHV);
-    let I, vCell, vPack, P;
+    const vPack = s * cellOCV;
+    let I, P;
 
     if (mode === 'power') {
-      const a = s * rInt;
-      const b = -s * cellOCV;
-      const disc = b * b - 4 * a * powerSet;
-      I = disc >= 0 ? (-b - Math.sqrt(disc)) / (2 * a) : 0;
-      I = Math.max(I, 0);
-      vCell = cellOCV - I * rInt;
-      vPack = s * vCell;
-      P = vPack * I;
+      I = vPack > 0 ? powerSet / vPack : 0;
+      P = powerSet;
     } else {
       I = currentSet;
-      vCell = cellOCV - I * rInt;
-      vPack = s * vCell;
       P = vPack * I;
     }
 
@@ -753,6 +679,46 @@ const verticalLinePlugin = {
 };
 
 Chart.register(verticalLinePlugin);
+
+const budgetLinePlugin = {
+  id: 'budgetLine',
+  afterDraw(chart) {
+    const bh = chart._budgetH;
+    if (bh == null) return;
+    const xScale = chart.scales.x;
+    const labels = chart.data.labels;
+    let pixelX = null;
+    for (let i = 0; i < labels.length; i++) {
+      if (parseFloat(labels[i]) >= bh) {
+        if (i > 0) {
+          const t0 = parseFloat(labels[i - 1]), t1 = parseFloat(labels[i]);
+          const p0 = xScale.getPixelForValue(i - 1), p1 = xScale.getPixelForValue(i);
+          pixelX = p0 + (p1 - p0) * ((bh - t0) / (t1 - t0));
+        } else {
+          pixelX = xScale.getPixelForValue(0);
+        }
+        break;
+      }
+    }
+    if (pixelX == null) return;
+    const { ctx, chartArea: { top, bottom } } = chart;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(pixelX, top);
+    ctx.lineTo(pixelX, bottom);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(239,68,68,0.7)';
+    ctx.setLineDash([8, 4]);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(239,68,68,0.9)';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('预算时间', pixelX, top - 4);
+    ctx.restore();
+  }
+};
+
+Chart.register(budgetLinePlugin);
 
 function formatTime(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -854,6 +820,7 @@ function buildChargeChart(data, result) {
       }
     }
   });
+  cChartInstance._budgetH = result.budgetTime / 3600;
 }
 
 function buildDischargeChart(data) {
@@ -1001,9 +968,9 @@ function showChargeResults(result, mode) {
   const totalH = result.totalTime / 3600;
   const finalSOC = result.finalSOC;
 
-  const notFull = result.finalSOC < 99.99;
+  const notFull = result.totalTime > result.budgetTime;
   const warnCls = notFull ? ' warn-red' : '';
-  const fullTag = notFull ? ' <span style="color:#dc2626;font-size:14px;font-weight:700">（充不满）</span>' : '';
+  const fullTag = notFull ? ' <span style="color:#dc2626;font-size:14px;font-weight:700">（时间不够）</span>' : '';
 
   if (mode === 'cc') {
     const Imax = result._optimizedValue != null ? result._optimizedValue : Math.max(...result.data.current);
@@ -1031,7 +998,7 @@ function showChargeResults(result, mode) {
     </div>
     <div class="result-sub">${formatTime(result.totalTime)} · ${finalSOC.toFixed(1)}%</div>`;
 
-  const phaseNames = { cc: '恒流 CC', cv: '恒压 CV', cp: '恒功率 CP', trickle: '涓流' };
+  const phaseNames = { cc: '恒流 CC', cp: '恒功率 CP', trickle: '涓流' };
   let phaseHTML = '<div class="result-grid">';
   phaseHTML += `
     <div class="result-item"><div class="label">预计充满时间</div><div class="value">${formatTimeH(result.totalTime)} h</div></div>
@@ -1108,7 +1075,7 @@ function optimizeCharge(params, mode) {
     const mid = (lo + hi) / 2;
     const testParams = { ...params, [paramKey]: mid };
     const testResult = simulateCharge(testParams);
-    if (testResult.finalSOC >= 99.99) {
+    if (testResult.totalTime <= params.budgetH * 3600) {
       bestResult = testResult;
       bestResult._optimizedValue = mid;
       hi = mid;
@@ -1150,7 +1117,7 @@ function runCharge() {
 
   let result = simulateCharge(params);
 
-  if (result.finalSOC >= 99.99) {
+  if (result.totalTime <= params.budgetH * 3600) {
     result = optimizeCharge(params, mode);
   }
 
